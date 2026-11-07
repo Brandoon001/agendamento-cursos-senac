@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Acesso administrativo | SENAC Cursos{% endblock %}
+
+{% block content %}
+  <section class="auth-card">
+    <p class="eyebrow">Área restrita</p>
+    <h1>Acesso administrativo</h1>
+    <p class="muted">
+      O formulário abaixo é o ponto de integração da autenticação. A validação
+      das credenciais deve ser implementada em
+      <code>app/blueprints/auth/routes.py</code>.
+    </p>
+
+    <form method="post" action="{{ url_for('auth.login') }}" class="form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" autocomplete="username" required>
+
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+
+      <button type="submit" class="button">Entrar</button>
+    </form>
+  </section>
+{% endblock %}

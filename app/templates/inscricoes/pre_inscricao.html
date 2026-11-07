@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Pré-inscrição | SENAC Cursos{% endblock %}
+
+{% block content %}
+  <section class="page-header">
+    <p class="eyebrow">Pré-inscrição</p>
+    <h1>Inscrição no curso #{{ curso_id }}</h1>
+  </section>
+
+  <section class="placeholder">
+    <h2>Ponto de integração</h2>
+    <p>
+      O formulário será implementado pelo módulo de inscrições. Campos previstos
+      no modelo <code>Inscricao</code>: nome completo, CPF, e-mail, telefone,
+      data de nascimento e observações.
+    </p>
+    <ul>
+      <li>Validar que o curso é gratuito, ativo e aceita pré-inscrição.</li>
+      <li>Validar CSRF no envio do formulário.</li>
+      <li>Impedir CPF duplicado no mesmo curso.</li>
+      <li>Persistir somente após validação dos dados.</li>
+    </ul>
+  </section>
+{% endblock %}

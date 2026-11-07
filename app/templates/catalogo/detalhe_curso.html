@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhe do curso | SENAC Cursos{% endblock %}
+
+{% block content %}
+  <section class="page-header">
+    <p class="eyebrow">Detalhe do curso</p>
+    <h1>Curso #{{ curso_id }}</h1>
+  </section>
+
+  <section class="placeholder">
+    <h2>Ponto de integração</h2>
+    <p>
+      Esta rota deverá carregar o curso, exibir seus dados e escolher a ação
+      correta conforme <code>Curso.tipo</code>.
+    </p>
+    <ul>
+      <li><strong>Pago:</strong> redirecionar para o link externo individual.</li>
+      <li><strong>Gratuito:</strong> oferecer o botão de pré-inscrição interna.</li>
+    </ul>
+    <a class="button button--secondary" href="{{ url_for('catalogo.listar') }}">Voltar ao catálogo</a>
+  </section>
+{% endblock %}

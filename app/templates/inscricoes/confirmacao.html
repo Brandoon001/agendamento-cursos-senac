@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Inscrição registrada | SENAC Cursos{% endblock %}
+
+{% block content %}
+  <section class="page-header">
+    <p class="eyebrow">Confirmação</p>
+    <h1>Pré-inscrição #{{ inscricao_id }}</h1>
+  </section>
+
+  <section class="placeholder">
+    <p>
+      Esta página exibirá a confirmação e o protocolo da pré-inscrição após a
+      implementação do módulo de inscrições.
+    </p>
+    <a class="button button--secondary" href="{{ url_for('catalogo.listar') }}">Voltar ao catálogo</a>
+  </section>
+{% endblock %}

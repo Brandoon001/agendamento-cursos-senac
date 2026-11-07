@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Cursos | SENAC Cursos{% endblock %}
+
+{% block content %}
+  <section class="page-header">
+    <p class="eyebrow">Catálogo</p>
+    <h1>Cursos disponíveis</h1>
+    <p>
+      Ponto de integração do módulo de catálogo. A listagem de cursos será
+      implementada nesta rota.
+    </p>
+  </section>
+
+  <section class="placeholder">
+    <h2>Módulo de catálogo</h2>
+    <p>
+      Consulte <code>app/blueprints/catalogo/routes.py</code> e o contrato
+      <code>CatalogoService</code> em <code>app/contracts.py</code>.
+    </p>
+    <p>
+      Cursos pagos devem usar <code>Curso.link_externo</code>. Cursos gratuitos
+      devem apontar para a pré-inscrição interna.
+    </p>
+  </section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Painel administrativo | SENAC Cursos{% endblock %}
+
+{% block content %}
+  <section class="page-header">
+    <p class="eyebrow">Administração</p>
+    <h1>Painel administrativo</h1>
+    <p>Área protegida pelo Flask-Login para o único administrador do sistema.</p>
+  </section>
+
+  <section class="grid">
+    <article class="card">
+      <h2>Cursos</h2>
+      <p>O CRUD de cursos será implementado neste módulo.</p>
+    </article>
+
+    <article class="card">
+      <h2>Inscrições</h2>
+      <p>Análise, confirmação e cancelamento de pré-inscrições.</p>
+    </article>
+
+    <article class="card">
+      <h2>Relatórios</h2>
+      <p>Indicadores de cursos e inscrições por período.</p>
+    </article>
+  </section>
+{% endblock %}

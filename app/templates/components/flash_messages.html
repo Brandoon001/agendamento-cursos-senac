@@ -1,0 +1,12 @@
+{% with mensagens = get_flashed_messages(with_categories=true) %}
+  {% if mensagens %}
+    <ul class="flash-list" aria-live="polite">
+      {% for categoria, mensagem in mensagens %}
+        <li class="flash flash--{{ categoria }}">
+          <span>{{ mensagem }}</span>
+          <button type="button" class="flash-close" data-dismiss aria-label="Fechar">&times;</button>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}

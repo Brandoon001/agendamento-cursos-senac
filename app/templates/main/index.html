@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Início | SENAC Cursos{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <p class="eyebrow">Fundação da aplicação</p>
+    <h1>Cursos SENAC em um só lugar</h1>
+    <p>
+      Estrutura compartilhada para catálogo de cursos pagos e gratuitos,
+      pré-inscrição interna e administração do sistema.
+    </p>
+    <a class="button" href="{{ url_for('catalogo.listar') }}">Ver catálogo</a>
+  </section>
+
+  <section class="grid" aria-label="Módulos da aplicação">
+    <article class="card">
+      <h2>Catálogo</h2>
+      <p>
+        Cursos pagos direcionam para links externos individuais. Cursos
+        gratuitos exibem o fluxo de pré-inscrição.
+      </p>
+    </article>
+
+    <article class="card">
+      <h2>Pré-inscrição</h2>
+      <p>
+        Formulário interno exclusivo para cursos gratuitos, com validação e
+        acompanhamento de status.
+      </p>
+    </article>
+
+    <article class="card">
+      <h2>Administração</h2>
+      <p>
+        Área protegida para o único administrador gerenciar cursos e
+        inscrições.
+      </p>
+    </article>
+  </section>
+
+  <section class="notice">
+    <h2>Estrutura pronta para integração</h2>
+    <p>
+      Os módulos de catálogo, inscrições e painel administrativo serão
+      implementados pelos integrantes da equipe sobre esta fundação.
+    </p>
+  </section>
+{% endblock %}

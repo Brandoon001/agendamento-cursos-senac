@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Página não encontrada | SENAC Cursos{% endblock %}
+
+{% block content %}
+  <section class="error-page">
+    <p class="error-code">404</p>
+    <h1>Página não encontrada</h1>
+    <p>O endereço informado não existe ou foi movido.</p>
+    <a class="button" href="{{ url_for('main.index') }}">Voltar ao início</a>
+  </section>
+{% endblock %}
