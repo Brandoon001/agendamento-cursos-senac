@@ -62,7 +62,7 @@ def _registrar_carregador_de_usuario() -> None:
 
 
 def _registrar_contexto_do_shell(app: Flask) -> None:
-    from app.models import Administrador, Curso, Inscricao
+    from app.models import Administrador, Curso, Inscricao, Turma
 
     @app.shell_context_processor
     def contexto_do_shell() -> dict[str, object]:
@@ -71,4 +71,5 @@ def _registrar_contexto_do_shell(app: Flask) -> None:
             "Administrador": Administrador,
             "Curso": Curso,
             "Inscricao": Inscricao,
+            "Turma": Turma,
         }

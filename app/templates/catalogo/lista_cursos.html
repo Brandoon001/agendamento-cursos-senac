@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "components/curso_card.html" import curso_card %}
 
 {% block title %}Cursos | SENAC Cursos{% endblock %}
 
@@ -7,20 +8,51 @@
     <p class="eyebrow">Catálogo</p>
     <h1>Cursos disponíveis</h1>
     <p>
-      Ponto de integração do módulo de catálogo. A listagem de cursos será
-      implementada nesta rota.
+      Busque pelo nome ou descrição e filtre entre cursos gratuitos e pagos.
     </p>
   </section>
 
-  <section class="placeholder">
-    <h2>Módulo de catálogo</h2>
-    <p>
-      Consulte <code>app/blueprints/catalogo/routes.py</code> e o contrato
-      <code>CatalogoService</code> em <code>app/contracts.py</code>.
+  <form class="filters" method="get" action="{{ url_for('catalogo.listar') }}">
+    <div class="field">
+      <label for="q">Buscar curso</label>
+      <input id="q" name="q" type="search" value="{{ termo }}" placeholder="Nome ou palavra-chave">
+    </div>
+
+    <div class="field">
+      <label for="tipo">Tipo</label>
+      <select id="tipo" name="tipo">
+        <option value="">Todos os tipos</option>
+        {% for tipo in tipos %}
+          <option value="{{ tipo.value }}" {% if tipo_selecionado == tipo.value %}selected{% endif %}>
+            {{ "Gratuito" if tipo.value == "gratuito" else "Pago" }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filters__actions">
+      <button type="submit" class="button">Filtrar</button>
+      {% if termo or tipo_selecionado %}
+        <a class="button button--secondary" href="{{ url_for('catalogo.listar') }}">Limpar</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if cursos %}
+    <p class="results-count">
+      {{ cursos|length }} curso(s) encontrado(s)
+      {% if termo %} para "{{ termo }}"{% endif %}
     </p>
-    <p>
-      Cursos pagos devem usar <code>Curso.link_externo</code>. Cursos gratuitos
-      devem apontar para a pré-inscrição interna.
-    </p>
-  </section>
+    <div class="course-grid">
+      {% for curso in cursos %}
+        {{ curso_card(curso) }}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="placeholder">
+      <h2>Nenhum curso encontrado</h2>
+      <p>Tente outro termo de busca ou remova os filtros aplicados.</p>
+      <a class="button button--secondary" href="{{ url_for('catalogo.listar') }}">Ver todos os cursos</a>
+    </div>
+  {% endif %}
 {% endblock %}

@@ -1,49 +1,41 @@
 {% extends "base.html" %}
+{% from "components/curso_card.html" import curso_card %}
 
 {% block title %}Início | SENAC Cursos{% endblock %}
 
 {% block content %}
   <section class="hero">
-    <p class="eyebrow">Fundação da aplicação</p>
-    <h1>Cursos SENAC em um só lugar</h1>
+    <p class="eyebrow">Catálogo de cursos</p>
+    <h1>Encontre o próximo curso para você</h1>
     <p>
-      Estrutura compartilhada para catálogo de cursos pagos e gratuitos,
-      pré-inscrição interna e administração do sistema.
+      Cursos pagos com inscrição pelo site oficial e cursos gratuitos com
+      pré-inscrição interna, acompanhados pela equipe do SENAC.
     </p>
-    <a class="button" href="{{ url_for('catalogo.listar') }}">Ver catálogo</a>
+    <a class="button" href="{{ url_for('catalogo.listar') }}">Ver todos os cursos</a>
   </section>
 
-  <section class="grid" aria-label="Módulos da aplicação">
-    <article class="card">
-      <h2>Catálogo</h2>
-      <p>
-        Cursos pagos direcionam para links externos individuais. Cursos
-        gratuitos exibem o fluxo de pré-inscrição.
-      </p>
-    </article>
+  <section class="section-block" aria-labelledby="cursos-destaque">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Disponíveis agora</p>
+        <h2 id="cursos-destaque">Cursos em destaque</h2>
+      </div>
+      {% if total_cursos > cursos|length %}
+        <a href="{{ url_for('catalogo.listar') }}">Ver os {{ total_cursos }} cursos</a>
+      {% endif %}
+    </div>
 
-    <article class="card">
-      <h2>Pré-inscrição</h2>
-      <p>
-        Formulário interno exclusivo para cursos gratuitos, com validação e
-        acompanhamento de status.
-      </p>
-    </article>
-
-    <article class="card">
-      <h2>Administração</h2>
-      <p>
-        Área protegida para o único administrador gerenciar cursos e
-        inscrições.
-      </p>
-    </article>
-  </section>
-
-  <section class="notice">
-    <h2>Estrutura pronta para integração</h2>
-    <p>
-      Os módulos de catálogo, inscrições e painel administrativo serão
-      implementados pelos integrantes da equipe sobre esta fundação.
-    </p>
+    {% if cursos %}
+      <div class="course-grid">
+        {% for curso in cursos %}
+          {{ curso_card(curso) }}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="placeholder">
+        <h2>Nenhum curso publicado</h2>
+        <p>No momento não há cursos ativos no catálogo. Volte em breve.</p>
+      </div>
+    {% endif %}
   </section>
 {% endblock %}

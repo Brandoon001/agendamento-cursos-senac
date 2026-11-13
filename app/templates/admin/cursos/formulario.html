@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo_pagina }} | Painel administrativo{% endblock %}
+
+{% block content %}
+  <p class="breadcrumb">
+    <a href="{{ url_for('admin.dashboard') }}">Painel</a>
+    <span aria-hidden="true">/</span>
+    <a href="{{ url_for('admin.cursos') }}">Cursos</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ "Editar" if curso else "Novo" }}</span>
+  </p>
+
+  <section class="page-header">
+    <p class="eyebrow">Administração</p>
+    <h1>{{ titulo_pagina }}</h1>
+    <p>Preencha os dados do curso. Campos marcados com * são obrigatórios.</p>
+  </section>
+
+  <form method="post" class="form form--wide" novalidate>
+    {{ formulario.hidden_tag() }}
+
+    <div class="form-grid">
+      <div class="field field--span-2">
+        {{ formulario.titulo.label }} *
+        {{ formulario.titulo }}
+        {% for erro in formulario.titulo.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field field--span-2">
+        {{ formulario.descricao.label }} *
+        {{ formulario.descricao(rows=5) }}
+        {% for erro in formulario.descricao.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.tipo.label }} *
+        {{ formulario.tipo(data_tipo_curso="true") }}
+        {% for erro in formulario.tipo.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.slug.label }}
+        {{ formulario.slug(placeholder="gerado-automaticamente") }}
+        {% for erro in formulario.slug.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field" data-campo-pago>
+        {{ formulario.valor.label }}
+        {{ formulario.valor(step="0.01", min="0") }}
+        {% for erro in formulario.valor.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field" data-campo-pago>
+        {{ formulario.link_externo.label }}
+        {{ formulario.link_externo(placeholder="https://...") }}
+        {% for erro in formulario.link_externo.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+        <small class="muted">Obrigatório apenas para cursos pagos.</small>
+      </div>
+
+      <div class="field">
+        {{ formulario.carga_horaria.label }}
+        {{ formulario.carga_horaria(min="1") }}
+        {% for erro in formulario.carga_horaria.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.vagas.label }}
+        {{ formulario.vagas(min="0") }}
+        {% for erro in formulario.vagas.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+        <small class="muted">Usado quando o curso não possui turmas com vagas próprias.</small>
+      </div>
+
+      <div class="field">
+        {{ formulario.data_inicio.label }}
+        {{ formulario.data_inicio }}
+        {% for erro in formulario.data_inicio.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.data_fim.label }}
+        {{ formulario.data_fim }}
+        {% for erro in formulario.data_fim.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field field--span-2">
+        {{ formulario.imagem_url.label }}
+        {{ formulario.imagem_url(placeholder="https://...") }}
+        {% for erro in formulario.imagem_url.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field field--checkbox field--span-2">
+        {{ formulario.ativo() }}
+        {{ formulario.ativo.label }}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="button">Salvar curso</button>
+      {% if curso %}
+        <a class="button button--secondary" href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Gerenciar turmas</a>
+      {% endif %}
+      <a class="button button--secondary" href="{{ url_for('admin.cursos') }}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

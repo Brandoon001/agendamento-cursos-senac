@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Cursos | Painel administrativo{% endblock %}
+
+{% block content %}
+  <p class="breadcrumb">
+    <a href="{{ url_for('admin.dashboard') }}">Painel</a>
+    <span aria-hidden="true">/</span>
+    <span>Cursos</span>
+  </p>
+
+  <section class="page-header page-header--com-acao">
+    <div>
+      <p class="eyebrow">Administração</p>
+      <h1>Gerenciar cursos</h1>
+      <p>Cadastre, edite, ative, desative e organize as turmas de cada curso.</p>
+    </div>
+    <a class="button" href="{{ url_for('admin.novo_curso') }}">Novo curso</a>
+  </section>
+
+  <form class="filters" method="get" action="{{ url_for('admin.cursos') }}">
+    <div class="field">
+      <label for="q">Buscar</label>
+      <input id="q" name="q" type="search" value="{{ termo }}" placeholder="Nome ou descrição">
+    </div>
+    <div class="field">
+      <label for="situacao">Situação</label>
+      <select id="situacao" name="situacao">
+        <option value="">Todas</option>
+        <option value="ativo" {% if situacao == "ativo" %}selected{% endif %}>Ativos</option>
+        <option value="inativo" {% if situacao == "inativo" %}selected{% endif %}>Inativos</option>
+      </select>
+    </div>
+    <div class="filters__actions">
+      <button type="submit" class="button">Filtrar</button>
+      {% if termo or situacao %}
+        <a class="button button--secondary" href="{{ url_for('admin.cursos') }}">Limpar</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if cursos %}
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Curso</th>
+            <th>Tipo</th>
+            <th>Carga</th>
+            <th>Turmas</th>
+            <th>Vagas</th>
+            <th>Situação</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for curso in cursos %}
+            <tr>
+              <td>
+                <strong>{{ curso.titulo }}</strong>
+                {% if curso.slug %}<small class="muted">/{{ curso.slug }}</small>{% endif %}
+              </td>
+              <td>{{ "Gratuito" if curso.e_gratuito else "Pago" }}</td>
+              <td>{{ curso.carga_horaria ~ "h" if curso.carga_horaria else "—" }}</td>
+              <td>{{ curso.turmas|length }}</td>
+              <td>
+                {% if curso.vagas_disponiveis is not none %}
+                  {{ curso.vagas_disponiveis }} disponível(is)
+                {% else %}
+                  Sem limite
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge badge--{{ 'ativo' if curso.ativo else 'inativo' }}">
+                  {{ "Ativo" if curso.ativo else "Inativo" }}
+                </span>
+              </td>
+              <td>
+                <div class="table-actions">
+                  <a href="{{ url_for('admin.editar_curso', curso_id=curso.id) }}">Editar</a>
+                  <a href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Turmas</a>
+
+                  {% if curso.ativo %}
+                    <form method="post" action="{{ url_for('admin.desativar_curso', curso_id=curso.id) }}" class="inline-form">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="link-button">Desativar</button>
+                    </form>
+                  {% else %}
+                    <form method="post" action="{{ url_for('admin.ativar_curso', curso_id=curso.id) }}" class="inline-form">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="link-button">Ativar</button>
+                    </form>
+                  {% endif %}
+
+                  <form method="post" action="{{ url_for('admin.excluir_curso', curso_id=curso.id) }}" class="inline-form" onsubmit="return confirm('Deseja realmente excluir este curso?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="link-button link-button--danger">Excluir</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="placeholder">
+      <h2>Nenhum curso encontrado</h2>
+      <p>Cadastre um novo curso ou ajuste os filtros de busca.</p>
+      <a class="button" href="{{ url_for('admin.novo_curso') }}">Novo curso</a>
+    </div>
+  {% endif %}
+{% endblock %}

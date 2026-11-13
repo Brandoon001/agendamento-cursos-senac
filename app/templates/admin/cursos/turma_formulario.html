@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo_pagina }} | Painel administrativo{% endblock %}
+
+{% block content %}
+  <p class="breadcrumb">
+    <a href="{{ url_for('admin.dashboard') }}">Painel</a>
+    <span aria-hidden="true">/</span>
+    <a href="{{ url_for('admin.cursos') }}">Cursos</a>
+    <span aria-hidden="true">/</span>
+    <a href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Turmas</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ "Editar" if turma else "Nova" }}</span>
+  </p>
+
+  <section class="page-header">
+    <p class="eyebrow">Turma de {{ curso.titulo }}</p>
+    <h1>{{ titulo_pagina }}</h1>
+    <p>Defina os dias, horários, período e quantidade de vagas da turma.</p>
+  </section>
+
+  <form method="post" class="form form--wide" novalidate>
+    {{ formulario.hidden_tag() }}
+
+    <div class="form-grid">
+      <div class="field field--span-2">
+        {{ formulario.nome.label }} *
+        {{ formulario.nome(placeholder="Ex.: Turma Manhã") }}
+        {% for erro in formulario.nome.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field field--span-2">
+        {{ formulario.dias_semana.label }}
+        {{ formulario.dias_semana(placeholder="Ex.: Segunda, quarta e sexta") }}
+        {% for erro in formulario.dias_semana.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.hora_inicio.label }}
+        {{ formulario.hora_inicio }}
+        {% for erro in formulario.hora_inicio.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.hora_fim.label }}
+        {{ formulario.hora_fim }}
+        {% for erro in formulario.hora_fim.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.data_inicio.label }}
+        {{ formulario.data_inicio }}
+        {% for erro in formulario.data_inicio.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.data_fim.label }}
+        {{ formulario.data_fim }}
+        {% for erro in formulario.data_fim.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.vagas.label }}
+        {{ formulario.vagas(min="0") }}
+        {% for erro in formulario.vagas.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+        <small class="muted">Deixe em branco para não limitar as vagas.</small>
+      </div>
+
+      <div class="field field--checkbox">
+        {{ formulario.ativo() }}
+        {{ formulario.ativo.label }}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="button">Salvar turma</button>
+      <a class="button button--secondary" href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

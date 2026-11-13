@@ -44,6 +44,16 @@ class Inscricao(TimestampMixin, db.Model):
         nullable=True,
         index=True,
     )
+    turma_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "turmas.id",
+            ondelete="SET NULL",
+            name="fk_inscricoes_turma_id",
+        ),
+        nullable=True,
+        index=True,
+    )
 
     nome_completo = db.Column(db.String(150), nullable=False)
     cpf = db.Column(db.String(14), nullable=True)
@@ -66,6 +76,7 @@ class Inscricao(TimestampMixin, db.Model):
     )
 
     curso = db.relationship("Curso", back_populates="inscricoes")
+    turma = db.relationship("Turma", back_populates="inscricoes")
     administrador = db.relationship(
         "Administrador",
         back_populates="inscricoes",

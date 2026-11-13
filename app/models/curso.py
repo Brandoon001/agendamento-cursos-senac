@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from app.extensions import db
 from app.models.base import TimestampMixin
-from app.models.enums import TipoCurso
+from app.models.enums import StatusInscricao, TipoCurso
 
 
 def _valores_enum(enum_cls: type) -> list[str]:
@@ -52,6 +52,13 @@ class Curso(TimestampMixin, db.Model):
         back_populates="curso",
         passive_deletes=True,
     )
+    turmas = db.relationship(
+        "Turma",
+        back_populates="curso",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="Turma.nome",
+    )
 
     __table_args__ = (
         db.CheckConstraint(
@@ -83,6 +90,11 @@ class Curso(TimestampMixin, db.Model):
     )
 
     @property
+    def situacao(self) -> str:
+        """Situação textual do curso para exibição e integração."""
+        return "ativo" if self.ativo else "inativo"
+
+    @property
     def e_pago(self) -> bool:
         return self.tipo == TipoCurso.PAGO
 
@@ -98,6 +110,51 @@ class Curso(TimestampMixin, db.Model):
         coluna ``ativo`` é aplicado. Nesse caso, considera-se o curso ativo.
         """
         return self.ativo is not False and self.e_gratuito
+
+    @property
+    def turmas_ativas(self) -> list:
+        """Turmas ativas do curso, ordenadas pelo nome."""
+        return [turma for turma in self.turmas if turma.ativo is not False]
+
+    @property
+    def vagas_ocupadas(self) -> int:
+        """Inscrições ainda válidas (não canceladas) do curso."""
+        return sum(
+            1
+            for inscricao in self.inscricoes
+            if inscricao.status != StatusInscricao.CANCELADA
+        )
+
+    @property
+    def vagas_disponiveis(self) -> int | None:
+        """Vagas restantes do curso ou ``None`` quando não há limite definido.
+
+        Quando o curso possui turmas, a disponibilidade é a soma das vagas
+        restantes das turmas ativas. Caso contrário, usa-se o campo
+        ``Curso.vagas`` como referência informativa.
+        """
+        turmas = self.turmas_ativas
+        if turmas:
+            if any(turma.vagas is None for turma in turmas):
+                return None
+            return sum(turma.vagas_disponiveis or 0 for turma in turmas)
+
+        if self.vagas is None:
+            return None
+        return max(self.vagas - self.vagas_ocupadas, 0)
+
+    @property
+    def possui_vagas(self) -> bool:
+        """Indica se o curso aceita novas inscrições por disponibilidade.
+
+        Cursos inativos nunca possuem vagas para novas inscrições. Quando não
+        há turmas ativas, o limite de referência do curso é usado.
+        """
+        if self.ativo is False:
+            return False
+        if not self.turmas_ativas:
+            return self.vagas is None or self.vagas_disponiveis > 0
+        return any(turma.disponivel for turma in self.turmas_ativas)
 
     def __repr__(self) -> str:
         return f"<Curso {self.titulo!r} ({self.tipo.value})>"

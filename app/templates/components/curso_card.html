@@ -1,0 +1,55 @@
+{% macro curso_card(curso) %}
+  <article class="card course-card">
+    {% if curso.imagem_url %}
+      <img class="course-card__image" src="{{ curso.imagem_url }}" alt="Imagem do curso {{ curso.titulo }}">
+    {% else %}
+      <div class="course-card__image course-card__image--placeholder" aria-hidden="true">
+        {{ curso.titulo[:1]|upper }}
+      </div>
+    {% endif %}
+
+    <div class="course-card__body">
+      <span class="badge badge--{{ curso.tipo.value }}">
+        {{ "Gratuito" if curso.e_gratuito else "Pago" }}
+      </span>
+
+      <h2 class="course-card__title">
+        <a href="{{ url_for('catalogo.detalhe', curso_id=curso.id) }}">{{ curso.titulo }}</a>
+      </h2>
+
+      <p class="course-card__description">{{ curso.descricao|truncate(150) }}</p>
+
+      <ul class="course-meta">
+        {% if curso.carga_horaria %}
+          <li>{{ curso.carga_horaria }}h</li>
+        {% endif %}
+        <li>
+          {% if curso.possui_vagas %}
+            {% if curso.vagas_disponiveis is not none %}
+              {{ curso.vagas_disponiveis }} vaga(s) disponível(is)
+            {% else %}
+              Vagas disponíveis
+            {% endif %}
+          {% else %}
+            Vagas esgotadas
+          {% endif %}
+        </li>
+      </ul>
+
+      <div class="course-card__actions">
+        <a class="button button--small button--secondary" href="{{ url_for('catalogo.detalhe', curso_id=curso.id) }}">
+          Ver detalhes
+        </a>
+        {% if curso.e_pago %}
+          <a class="button button--small" href="{{ url_for('catalogo.comprar', curso_id=curso.id) }}">
+            Comprar
+          </a>
+        {% elif curso.aceita_pre_inscricao and curso.possui_vagas %}
+          <a class="button button--small" href="{{ url_for('inscricoes.pre_inscricao', curso_id=curso.id) }}">
+            Pré-inscrição
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+{% endmacro %}

@@ -6,23 +6,74 @@
   <section class="page-header">
     <p class="eyebrow">Administração</p>
     <h1>Painel administrativo</h1>
-    <p>Área protegida pelo Flask-Login para o único administrador do sistema.</p>
+    <p>Gerencie cursos, turmas, horários e acompanhe as pré-inscrições.</p>
   </section>
 
-  <section class="grid">
-    <article class="card">
-      <h2>Cursos</h2>
-      <p>O CRUD de cursos será implementado neste módulo.</p>
+  <section class="stats-grid" aria-label="Indicadores">
+    <article class="stat-card">
+      <span class="stat-card__value">{{ total_cursos }}</span>
+      <span class="stat-card__label">Cursos cadastrados</span>
     </article>
+    <article class="stat-card">
+      <span class="stat-card__value">{{ cursos_ativos }}</span>
+      <span class="stat-card__label">Cursos ativos</span>
+    </article>
+    <article class="stat-card">
+      <span class="stat-card__value">{{ total_turmas }}</span>
+      <span class="stat-card__label">Turmas cadastradas</span>
+    </article>
+    <article class="stat-card">
+      <span class="stat-card__value">{{ total_inscricoes }}</span>
+      <span class="stat-card__label">Pré-inscrições recebidas</span>
+    </article>
+  </section>
 
-    <article class="card">
-      <h2>Inscrições</h2>
-      <p>Análise, confirmação e cancelamento de pré-inscrições.</p>
-    </article>
+  <div class="admin-actions">
+    <a class="button" href="{{ url_for('admin.novo_curso') }}">Novo curso</a>
+    <a class="button button--secondary" href="{{ url_for('admin.cursos') }}">Gerenciar cursos</a>
+  </div>
 
-    <article class="card">
-      <h2>Relatórios</h2>
-      <p>Indicadores de cursos e inscrições por período.</p>
-    </article>
+  <section class="section-block">
+    <div class="section-heading">
+      <h2>Cursos recentes</h2>
+      <a href="{{ url_for('admin.cursos') }}">Ver todos</a>
+    </div>
+
+    {% if cursos_recentes %}
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Curso</th>
+              <th>Tipo</th>
+              <th>Situação</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for curso in cursos_recentes %}
+              <tr>
+                <td>{{ curso.titulo }}</td>
+                <td>{{ "Gratuito" if curso.e_gratuito else "Pago" }}</td>
+                <td>
+                  <span class="badge badge--{{ 'ativo' if curso.ativo else 'inativo' }}">
+                    {{ "Ativo" if curso.ativo else "Inativo" }}
+                  </span>
+                </td>
+                <td class="table-actions">
+                  <a href="{{ url_for('admin.editar_curso', curso_id=curso.id) }}">Editar</a>
+                  <a href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Turmas</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="placeholder">
+        <p>Nenhum curso cadastrado ainda.</p>
+        <a class="button" href="{{ url_for('admin.novo_curso') }}">Cadastrar primeiro curso</a>
+      </div>
+    {% endif %}
   </section>
 {% endblock %}
