@@ -45,6 +45,12 @@ class Config:
 
     MAX_CONTENT_LENGTH = 4 * 1024 * 1024
 
+    CIDADE_PADRAO = os.getenv("CIDADE_PADRAO", "Sobral")
+    PORTAL_CURSOS_URL = os.getenv(
+        "PORTAL_CURSOS_URL",
+        "https://cursos.ce.senac.br/",
+    )
+
 
 class DevelopmentConfig(Config):
     """Ambiente de desenvolvimento local."""
@@ -83,4 +89,7 @@ _CONFIGURACOES = {
 def get_config(nome: str | None = None) -> type[Config]:
     """Retorna a classe de configuração conforme nome ou variável de ambiente."""
     chave = (nome or os.getenv("FLASK_CONFIG") or "development").strip().lower()
-    return _CONFIGURACOES.get(chave, DevelopmentConfig)
+    configuracao = _CONFIGURACOES.get(chave)
+    if configuracao is None:
+        raise ValueError(f"Configuração desconhecida: {chave!r}")
+    return configuracao

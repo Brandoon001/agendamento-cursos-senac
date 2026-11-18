@@ -1,4 +1,4 @@
-"""Modelo de curso pago ou gratuito."""
+"""Modelo de curso gratuito do SENAC Sobral."""
 
 from __future__ import annotations
 
@@ -12,13 +12,12 @@ def _valores_enum(enum_cls: type) -> list[str]:
 
 
 class Curso(TimestampMixin, db.Model):
-    """Curso ofertado pelo SENAC.
+    """Curso gratuito ofertado pelo SENAC Sobral.
 
-    Cursos pagos possuem um link externo individual de compra. Cursos gratuitos
-    não possuem link externo e aceitam pré-inscrição interna.
-
-    Cursos com inscrições não devem ser excluídos: o histórico precisa ser
-    preservado. Nesses casos, o curso deve ser arquivado pela coluna ``ativo``.
+    O catálogo público mostra apenas cursos ativos, gratuitos e da cidade
+    configurada (``Sobral`` por padrão). Cursos com inscrições não devem ser
+    excluídos: o histórico precisa ser preservado. Nesses casos, o curso deve
+    ser arquivado pela coluna ``ativo``.
     """
 
     __tablename__ = "cursos"
@@ -26,6 +25,13 @@ class Curso(TimestampMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     titulo = db.Column(db.String(150), nullable=False)
     slug = db.Column(db.String(180), unique=True, nullable=True, index=True)
+    cidade = db.Column(
+        db.String(100),
+        nullable=False,
+        default="Sobral",
+        server_default="Sobral",
+        index=True,
+    )
     descricao = db.Column(db.Text, nullable=False, default="")
     tipo = db.Column(
         db.Enum(
@@ -86,7 +92,7 @@ class Curso(TimestampMixin, db.Model):
             "data_fim IS NULL OR data_inicio IS NULL OR data_fim >= data_inicio",
             name="ck_cursos_periodo_valido",
         ),
-        db.Index("ix_cursos_publicacao", "ativo", "tipo"),
+        db.Index("ix_cursos_publicacao", "ativo", "tipo", "cidade"),
     )
 
     @property
@@ -95,21 +101,13 @@ class Curso(TimestampMixin, db.Model):
         return "ativo" if self.ativo else "inativo"
 
     @property
-    def e_pago(self) -> bool:
-        return self.tipo == TipoCurso.PAGO
-
-    @property
-    def e_gratuito(self) -> bool:
-        return self.tipo == TipoCurso.GRATUITO
-
-    @property
     def aceita_pre_inscricao(self) -> bool:
         """Indica se o curso pode receber uma pré-inscrição interna.
 
         Objetos novos ainda não passaram pelo flush, quando o valor padrão da
         coluna ``ativo`` é aplicado. Nesse caso, considera-se o curso ativo.
         """
-        return self.ativo is not False and self.e_gratuito
+        return self.ativo is not False
 
     @property
     def turmas_ativas(self) -> list:
@@ -157,4 +155,4 @@ class Curso(TimestampMixin, db.Model):
         return any(turma.disponivel for turma in self.turmas_ativas)
 
     def __repr__(self) -> str:
-        return f"<Curso {self.titulo!r} ({self.tipo.value})>"
+        return f"<Curso {self.titulo!r} ({self.cidade})>"

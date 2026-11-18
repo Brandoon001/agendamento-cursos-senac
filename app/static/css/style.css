@@ -125,6 +125,16 @@ a:hover {
   font-size: 1.08rem;
 }
 
+.hero .external-course-link {
+  margin-top: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.hero .external-course-link a {
+  color: #fff;
+  text-decoration: underline;
+}
+
 .eyebrow {
   margin: 0;
   color: var(--laranja);
@@ -167,7 +177,8 @@ a:hover {
 .card,
 .notice,
 .placeholder,
-.auth-card {
+.auth-card,
+.comprovante {
   padding: 1.5rem;
   border: 1px solid var(--borda);
   border-radius: var(--raio);
@@ -215,6 +226,39 @@ a:hover {
 .auth-card h1 {
   margin: 0.25rem 0 0.75rem;
   color: var(--azul-escuro);
+}
+
+.comprovante {
+  width: min(720px, 100%);
+  margin-inline: auto;
+}
+
+.comprovante h1 {
+  margin: 0.25rem 0 1.25rem;
+  color: var(--azul-escuro);
+}
+
+.comprovante__protocolo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border: 2px dashed var(--azul);
+  border-radius: var(--raio);
+  background: var(--azul-escuro);
+  color: #fff;
+}
+
+.comprovante__protocolo span {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.comprovante__protocolo strong {
+  font-size: clamp(1.25rem, 3vw, 1.9rem);
+  letter-spacing: 0.05em;
 }
 
 .form {
@@ -451,19 +495,35 @@ code {
   color: #146c2e;
 }
 
-.badge--pago {
-  background: #fff4e0;
-  color: #8a5000;
-}
-
 .badge--inativo {
   background: #fdecec;
   color: #9b1c1c;
 }
 
-.badge--encerrado {
+.badge--encerrado,
+.badge--cancelada {
   background: #fdecec;
   color: #9b1c1c;
+}
+
+.badge--recebida {
+  background: #fff4e0;
+  color: #8a5000;
+}
+
+.badge--em_analise {
+  background: #e9f0ff;
+  color: #1b4f9c;
+}
+
+.badge--contatada {
+  background: #f3e9ff;
+  color: #63228c;
+}
+
+.badge--finalizada {
+  background: #e6f6ec;
+  color: #146c2e;
 }
 
 .results-count {
@@ -652,6 +712,34 @@ code {
 .stat-card__label {
   color: var(--texto-suave);
   font-size: 0.92rem;
+}
+
+.stats-grid--status {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin-top: 1.5rem;
+}
+
+.stat-card--link {
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.stat-card--link:hover {
+  transform: translateY(-2px);
+  border-color: var(--azul);
+}
+
+.stat-card--link:hover .stat-card__label {
+  color: var(--azul-escuro);
+}
+
+.inline-form select {
+  max-width: 150px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
 }
 
 .admin-actions {

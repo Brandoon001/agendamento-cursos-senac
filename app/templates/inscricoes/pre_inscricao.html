@@ -1,25 +1,80 @@
 {% extends "base.html" %}
 
-{% block title %}Pré-inscrição | SENAC Cursos{% endblock %}
+{% block title %}Pré-inscrição: {{ curso.titulo }} | SENAC Cursos{% endblock %}
 
 {% block content %}
+  <p class="breadcrumb">
+    <a href="{{ url_for('catalogo.listar') }}">Cursos</a>
+    <span aria-hidden="true">/</span>
+    <a href="{{ url_for('catalogo.detalhe', curso_id=curso.id) }}">{{ curso.titulo }}</a>
+    <span aria-hidden="true">/</span>
+    <span>Pré-inscrição</span>
+  </p>
+
   <section class="page-header">
-    <p class="eyebrow">Pré-inscrição</p>
-    <h1>Inscrição no curso #{{ curso_id }}</h1>
+    <p class="eyebrow">Pré-inscrição gratuita</p>
+    <h1>{{ curso.titulo }}</h1>
+    <p class="muted">Preencha seus dados para registrar sua pré-inscrição.</p>
   </section>
 
-  <section class="placeholder">
-    <h2>Ponto de integração</h2>
-    <p>
-      O formulário será implementado pelo módulo de inscrições. Campos previstos
-      no modelo <code>Inscricao</code>: nome completo, CPF, e-mail, telefone,
-      data de nascimento e observações.
-    </p>
-    <ul>
-      <li>Validar que o curso é gratuito, ativo e aceita pré-inscrição.</li>
-      <li>Validar CSRF no envio do formulário.</li>
-      <li>Impedir CPF duplicado no mesmo curso.</li>
-      <li>Persistir somente após validação dos dados.</li>
-    </ul>
-  </section>
+  {% if turma %}
+    <div class="notice">
+      <strong>Turma selecionada:</strong> {{ turma.nome }}
+      {% if turma.dias_semana %}&middot; {{ turma.dias_semana }}{% endif %}
+      &middot; {{ turma.horario_formatado }}
+    </div>
+  {% endif %}
+
+  <form method="post" class="form form--wide" novalidate>
+    {{ formulario.hidden_tag() }}
+
+    <div class="form-grid">
+      <div class="field field--span-2">
+        {{ formulario.nome_completo.label }} *
+        {{ formulario.nome_completo(autocomplete="name", placeholder="Nome e sobrenome") }}
+        {% for erro in formulario.nome_completo.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.cpf.label }} *
+        {{ formulario.cpf(inputmode="numeric", placeholder="000.000.000-00") }}
+        {% for erro in formulario.cpf.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ formulario.telefone.label }} *
+        {{ formulario.telefone(type="tel", autocomplete="tel", placeholder="(00) 00000-0000") }}
+        {% for erro in formulario.telefone.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field field--span-2">
+        {{ formulario.email.label }} *
+        {{ formulario.email(type="email", autocomplete="email", placeholder="voce@exemplo.com") }}
+        {% for erro in formulario.email.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field field--span-2">
+        {{ formulario.data_nascimento.label }}
+        {{ formulario.data_nascimento }}
+        {% for erro in formulario.data_nascimento.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field field--span-2">
+        {{ formulario.observacoes.label }}
+        {{ formulario.observacoes(rows=4) }}
+        {% for erro in formulario.observacoes.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+
+      <div class="field field--checkbox field--span-2">
+        {{ formulario.aceite() }}
+        {{ formulario.aceite.label }} *
+        {% for erro in formulario.aceite.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="button">Enviar pré-inscrição</button>
+      <a class="button button--secondary" href="{{ url_for('catalogo.detalhe', curso_id=curso.id) }}">Cancelar</a>
+    </div>
+  </form>
 {% endblock %}

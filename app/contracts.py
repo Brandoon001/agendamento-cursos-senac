@@ -5,6 +5,10 @@ As implementações concretas ficam a cargo de cada integrante, preferencialment
 em ``app/services``. Os contratos evitam que um módulo dependa dos detalhes
 internos do outro.
 
+O catálogo público apresenta somente cursos gratuitos e ativos da cidade
+configurada (Sobral por padrão). Para outras oportunidades, o sistema oferece
+apenas o link externo único para https://cursos.ce.senac.br/.
+
 Cursos com inscrições não devem ser excluídos: o histórico é preservado e o
 banco bloqueia a exclusão. Nesses casos, o curso deve ser arquivado por meio de
 ``Curso.ativo = False``.
@@ -22,14 +26,15 @@ if TYPE_CHECKING:
 class CatalogoService(Protocol):
     """Operações esperadas do módulo de catálogo."""
 
-    def listar_cursos_publicos(self) -> Sequence[Curso]:
-        """Lista somente cursos ativos e visíveis ao público."""
+    def listar_cursos_publicos(
+        self,
+        termo: str | None = None,
+        cidade: str | None = None,
+    ) -> Sequence[Curso]:
+        """Lista cursos ativos, gratuitos e da cidade configurada."""
 
     def obter_curso(self, curso_id: int) -> Curso | None:
         """Busca um curso pelo identificador."""
-
-    def obter_link_compra(self, curso: Curso) -> str:
-        """Retorna o link externo de compra de um curso pago."""
 
 
 class InscricaoService(Protocol):

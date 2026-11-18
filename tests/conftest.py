@@ -29,7 +29,7 @@ def administrador(app):
 
     usuario = Administrador(
         nome="Administrador de Teste",
-        email="admin@example.test",
+        email="admin@example.com",
     )
     usuario.definir_senha("senha-ficticia")
     db.session.add(usuario)

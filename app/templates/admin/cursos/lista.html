@@ -45,7 +45,7 @@
         <thead>
           <tr>
             <th>Curso</th>
-            <th>Tipo</th>
+            <th>Cidade</th>
             <th>Carga</th>
             <th>Turmas</th>
             <th>Vagas</th>
@@ -60,7 +60,7 @@
                 <strong>{{ curso.titulo }}</strong>
                 {% if curso.slug %}<small class="muted">/{{ curso.slug }}</small>{% endif %}
               </td>
-              <td>{{ "Gratuito" if curso.e_gratuito else "Pago" }}</td>
+              <td>{{ curso.cidade }}</td>
               <td>{{ curso.carga_horaria ~ "h" if curso.carga_horaria else "—" }}</td>
               <td>{{ curso.turmas|length }}</td>
               <td>

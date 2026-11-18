@@ -6,9 +6,10 @@
 {% block content %}
   <section class="page-header">
     <p class="eyebrow">Catálogo</p>
-    <h1>Cursos disponíveis</h1>
+    <h1>Cursos gratuitos em Sobral</h1>
     <p>
-      Busque pelo nome ou descrição e filtre entre cursos gratuitos e pagos.
+      Busque pelo nome ou descrição dos cursos disponíveis na unidade do SENAC
+      em Sobral.
     </p>
   </section>
 
@@ -18,21 +19,9 @@
       <input id="q" name="q" type="search" value="{{ termo }}" placeholder="Nome ou palavra-chave">
     </div>
 
-    <div class="field">
-      <label for="tipo">Tipo</label>
-      <select id="tipo" name="tipo">
-        <option value="">Todos os tipos</option>
-        {% for tipo in tipos %}
-          <option value="{{ tipo.value }}" {% if tipo_selecionado == tipo.value %}selected{% endif %}>
-            {{ "Gratuito" if tipo.value == "gratuito" else "Pago" }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-
     <div class="filters__actions">
       <button type="submit" class="button">Filtrar</button>
-      {% if termo or tipo_selecionado %}
+      {% if termo %}
         <a class="button button--secondary" href="{{ url_for('catalogo.listar') }}">Limpar</a>
       {% endif %}
     </div>

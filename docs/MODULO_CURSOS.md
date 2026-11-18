@@ -6,76 +6,71 @@ projeto, sem substituir a leitura dos arquivos.
 
 ## 1. Visão geral
 
+O catálogo é focado em **cursos gratuitos do SENAC em Sobral**. Não há cursos
+pagos no sistema: o painel não permite cadastrá-los, as rotas de compra foram
+removidas e a migração `f6a7b8c9d0e1` exclui cursos pagos eventualmente
+existentes.
+
 O módulo é responsável por:
 
-- catálogo público de cursos;
+- catálogo público de cursos gratuitos e ativos de Sobral;
 - página inicial com cursos em destaque;
 - detalhe público do curso;
 - cadastro, edição, ativação, desativação e exclusão de cursos;
 - cadastro, edição, ativação, desativação e exclusão de turmas;
 - horários, períodos e controle de vagas por turma;
-- diferenciação entre curso gratuito e curso pago;
+- link externo único para `https://cursos.ce.senac.br/` na navbar e na home;
 - integração de dados com o módulo de inscrições.
 
-O módulo **não** implementa a persistência de inscrições nem o login. Essas
-responsabilidades pertencem aos módulos de inscrições e autenticação. As rotas
-administrativas usam o `login_required` já existente na fundação.
+A cidade padrão fica em `CIDADE_PADRAO` (`Sobral`) e o link externo em
+`PORTAL_CURSOS_URL`, ambos em `app/config.py` e configuráveis por variáveis de
+ambiente.
 
 ## 2. Principais arquivos e responsabilidades
 
 | Arquivo | Responsabilidade |
 | --- | --- |
-| `app/models/curso.py` | Modelo `Curso`, relacionamentos, restrições e cálculos de vagas do curso. |
+| `app/models/curso.py` | Modelo `Curso`, cidade, relacionamentos, restrições e cálculos de vagas. |
 | `app/models/turma.py` | Modelo `Turma`, horários, período, situação e cálculos de vagas da turma. |
-| `app/services/curso_service.py` | Regras de negócio de cursos e turmas, validações, slug e persistência. |
+| `app/services/curso_service.py` | Regras de negócio, filtro por cidade, validações, slug e persistência. |
 | `app/forms/curso.py` | Formulários `CursoForm` e `TurmaForm` (WTForms/Flask-WTF). |
-| `app/blueprints/catalogo/routes.py` | Rotas públicas: listagem, detalhe e compra de curso pago. |
-| `app/blueprints/main/routes.py` | Página inicial. |
+| `app/blueprints/catalogo/routes.py` | Rotas públicas: listagem e detalhe. |
+| `app/blueprints/main/routes.py` | Página inicial com o link para o portal do Ceará. |
 | `app/blueprints/admin/routes.py` | Rotas administrativas de cursos e turmas. |
-| `app/templates/catalogo/lista_cursos.html` | Página do catálogo com busca e filtro. |
-| `app/templates/catalogo/detalhe_curso.html` | Página de detalhe, turmas, vagas e ações. |
+| `app/templates/catalogo/lista_cursos.html` | Catálogo com busca por nome/descrição. |
+| `app/templates/catalogo/detalhe_curso.html` | Detalhe, turmas, vagas e pré-inscrição. |
 | `app/templates/components/curso_card.html` | Card reutilizável de curso. |
+| `app/templates/components/navbar.html` | Link externo único para o portal de cursos do Ceará. |
 | `app/templates/admin/cursos/lista.html` | Listagem administrativa de cursos. |
-| `app/templates/admin/cursos/formulario.html` | Formulário de curso. |
-| `app/templates/admin/cursos/turmas.html` | Gerenciamento de turmas de um curso. |
-| `app/templates/admin/cursos/turma_formulario.html` | Formulário de turma. |
+| `app/templates/admin/cursos/formulario.html` | Formulário de curso com campo `cidade`. |
 | `app/static/css/style.css` | Identidade visual e responsividade. |
-| `app/static/js/main.js` | Exibição condicional dos campos de curso pago e fechamento de mensagens. |
 | `tests/test_cursos.py` | Testes do módulo de cursos, turmas, vagas e rotas. |
-| `migrations/versions/c3d4e5f6a7b8_modulo_de_cursos_e_turmas.py` | Criação da tabela `turmas` e vínculo `inscricoes.turma_id`. |
+| `migrations/versions/f6a7b8c9d0e1_cidade_sobral_e_remove_cursos_pagos.py` | Adiciona `cidade`, exclui cursos pagos. |
 
 ## 3. Fluxo de uma requisição
 
 ### 3.1 Detalhe público de um curso
 
 1. O navegador acessa `GET /cursos/<curso_id>`.
-2. A função `detalhe` em `app/blueprints/catalogo/routes.py` recebe o pedido.
-3. Ela chama `CursoService.obter_curso(curso_id)`.
-4. A função `curso_esta_visivel` verifica se o curso existe e está ativo.
-5. Se o curso não estiver visível, a rota responde `404`.
-6. `CursoService.listar_turmas(curso_id, apenas_ativas=True)` carrega apenas as
-   turmas ativas.
+2. `detalhe` em `app/blueprints/catalogo/routes.py` recebe o pedido.
+3. A função chama `CursoService.obter_curso(curso_id)`.
+4. `curso_esta_visivel` exige curso ativo, gratuito e da cidade configurada.
+5. Se não estiver visível, a rota responde `404`.
+6. `listar_turmas(curso_id, apenas_ativas=True)` carrega as turmas ativas.
 7. O template `catalogo/detalhe_curso.html` recebe `curso` e `turmas`.
-8. O template usa as propriedades do modelo para decidir o que mostrar:
-   - `curso.e_pago` / `curso.e_gratuito`;
-   - `curso.aceita_pre_inscricao`;
-   - `curso.possui_vagas`;
-   - `turma.disponivel`;
-   - `turma.horario_formatado`;
-   - `turma.vagas_disponiveis`.
+8. O template usa `aceita_pre_inscricao`, `possui_vagas`, `turma.disponivel`,
+   `turma.horario_formatado` e `turma.vagas_disponiveis`.
 
 ### 3.2 Cadastro administrativo de curso
 
 1. O administrador acessa `GET /admin/cursos/novo`.
-2. O Blueprint `admin` já exige autenticação por meio do `before_request`
-   `exigir_autenticacao` em `app/blueprints/admin/routes.py`.
-3. A função `novo_curso` cria um `CursoForm`.
-4. No `POST`, `formulario.validate_on_submit()` executa as validações do
-   formulário.
-5. Os dados são convertidos por `_dados_do_formulario`.
-6. `CursoService.criar_curso(dados)` aplica as regras de negócio.
-7. O serviço persiste e confirma a transação.
-8. A rota redireciona para o gerenciamento de turmas do curso criado.
+2. O `before_request` `exigir_autenticacao` exige login.
+3. `novo_curso` cria um `CursoForm` com `cidade` preenchida com `Sobral`.
+4. No `POST`, `validate_on_submit()` executa as validações.
+5. `_dados_do_formulario` extrai os campos definidos em `CAMPOS_CURSO`.
+6. `CursoService.criar_curso(dados)` força `tipo = GRATUITO`, limpa
+   `link_externo`/`valor` e persiste o curso.
+7. A rota redireciona para o gerenciamento de turmas do curso criado.
 
 ## 4. Modelo `Curso`
 
@@ -88,10 +83,9 @@ Arquivo: `app/models/curso.py` — classe `Curso`.
 | `id` | Identificador interno. |
 | `titulo` | Nome exibido no catálogo. |
 | `slug` | Identificador amigável e único para URL. |
+| `cidade` | Cidade da oferta; padrão `Sobral`, obrigatória e indexada. |
 | `descricao` | Texto de divulgação. |
-| `tipo` | `TipoCurso.PAGO` ou `TipoCurso.GRATUITO`. |
-| `link_externo` | Obrigatório em curso pago; proibido em curso gratuito. |
-| `valor` | Valor de referência de curso pago. |
+| `tipo` | Mantido no banco por compatibilidade; sempre `GRATUITO`. |
 | `carga_horaria` | Carga horária em horas. |
 | `data_inicio` / `data_fim` | Período geral do curso. |
 | `vagas` | Vagas de referência quando não há turmas com vagas próprias. |
@@ -102,20 +96,20 @@ Arquivo: `app/models/curso.py` — classe `Curso`.
 
 As restrições em `__table_args__` garantem no banco:
 
+- cidade presente;
 - tipo válido;
-- curso pago com link externo e curso gratuito sem link;
-- valor e vagas não negativos;
-- carga horária positiva;
+- vagas e carga horária não negativas;
 - data final maior ou igual à inicial.
+
+As colunas legadas `link_externo` e `valor` permanecem no esquema apenas para
+compatibilidade com o histórico, mas não são usadas pelo fluxo atual.
 
 ### 4.2 Propriedades importantes
 
 | Propriedade | Comportamento |
 | --- | --- |
 | `situacao` | Retorna `"ativo"` ou `"inativo"`. |
-| `e_pago` | `True` quando `tipo == TipoCurso.PAGO`. |
-| `e_gratuito` | `True` quando `tipo == TipoCurso.GRATUITO`. |
-| `aceita_pre_inscricao` | Curso gratuito e não inativo; indica elegibilidade para pré-inscrição. |
+| `aceita_pre_inscricao` | Curso não inativo; indica elegibilidade para pré-inscrição. |
 | `turmas_ativas` | Lista somente turmas não inativas. |
 | `vagas_ocupadas` | Inscrições do curso cujo status não é `CANCELADA`. |
 | `vagas_disponiveis` | Soma das vagas restantes das turmas ativas ou, sem turmas, `vagas - vagas_ocupadas`. Retorna `None` quando não há limite. |
@@ -161,13 +155,15 @@ Arquivo: `app/services/curso_service.py` — classe `CursoService`.
 
 | Método | Responsabilidade |
 | --- | --- |
-| `listar_cursos_publicos(termo, tipo)` | Lista apenas cursos ativos, com busca por título/descrição e filtro por tipo. |
+| `listar_cursos_publicos(termo, cidade)` | Lista cursos ativos, gratuitos e da cidade configurada, com busca por título/descrição. |
 | `listar_todos(termo, situacao)` | Lista cursos no painel, incluindo inativos, com filtros. |
 | `obter_curso(curso_id)` | Busca um curso pelo ID. |
-| `obter_link_compra(curso)` | Devolve o link de compra de um curso pago; lança `ValueError` se inválido. |
 | `listar_turmas(curso_id, apenas_ativas)` | Lista turmas ordenadas por nome. |
 | `listar_turmas_disponiveis(curso_id)` | Lista turmas ativas que ainda têm vagas. |
 | `obter_turma(turma_id)` | Busca uma turma pelo ID. |
+
+A função `cidade_padrao()` lê `current_app.config["CIDADE_PADRAO"]` e é usada
+tanto na listagem pública quanto em `curso_esta_visivel`.
 
 ### 6.2 Escrita
 
@@ -186,16 +182,16 @@ Arquivo: `app/services/curso_service.py` — classe `CursoService`.
 
 A função `_aplicar_dados_do_curso` valida:
 
-- tipo obrigatório e válido;
 - título obrigatório;
 - descrição obrigatória;
-- curso pago precisa de link externo `http://` ou `https://`;
-- curso gratuito não mantém link externo nem valor;
+- cidade obrigatória, com no máximo 100 caracteres;
 - carga horária maior que zero quando informada;
 - vagas não negativas;
-- valor não negativo;
 - data final não anterior à inicial;
 - geração de slug único.
+
+O serviço sempre grava `tipo = TipoCurso.GRATUITO`, `link_externo = None` e
+`valor = None`, mesmo que o chamador envie valores diferentes.
 
 ### 6.4 Validações da turma
 
@@ -209,11 +205,9 @@ A função `_aplicar_dados_da_turma` valida:
 
 ### 6.5 Slug único
 
-A função pública `gerar_slug` em `app/services/curso_service.py` remove acentos,
-troca caracteres especiais por hífen e converte para minúsculas.
-
-A função `CursoService._slug_unico` verifica o banco e acrescenta sufixos
-numéricos quando necessário:
+`gerar_slug` remove acentos, troca caracteres especiais por hífen e converte
+para minúsculas. `CursoService._slug_unico` verifica o banco e acrescenta
+sufixos numéricos quando necessário:
 
 - `excel-basico`
 - `excel-basico-2`
@@ -230,22 +224,16 @@ Arquivo: `app/blueprints/catalogo/routes.py`.
 
 | Rota | Função | Comportamento |
 | --- | --- | --- |
-| `GET /cursos/` | `listar` | Lista cursos ativos, com busca `q` e filtro `tipo`. |
-| `GET /cursos/<id>` | `detalhe` | Exibe curso ativo, turmas ativas e vagas; retorna 404 se inativo. |
-| `GET /cursos/<id>/comprar` | `comprar` | Redireciona somente curso pago, ativo e com link externo. |
+| `GET /cursos/` | `listar` | Lista cursos ativos, gratuitos e de Sobral, com busca `q`. |
+| `GET /cursos/<id>` | `detalhe` | Exibe curso visível, turmas ativas e vagas; retorna 404 caso contrário. |
 
-Arquivo: `app/blueprints/main/routes.py`.
-
-| Rota | Função | Comportamento |
-| --- | --- | --- |
-| `GET /` | `index` | Exibe até seis cursos ativos na página inicial. |
+A antiga rota `catalogo.comprar` foi removida: qualquer requisição para
+`/cursos/<id>/comprar` retorna `404`.
 
 ### 7.2 Rotas administrativas
 
-Arquivo: `app/blueprints/admin/routes.py`.
-
-Todas são protegidas pelo `before_request` `exigir_autenticacao`, que usa
-`login_required`.
+Arquivo: `app/blueprints/admin/routes.py`. Todas são protegidas pelo
+`before_request` `exigir_autenticacao`.
 
 | Rota | Função |
 | --- | --- |
@@ -263,7 +251,7 @@ Todas são protegidas pelo `before_request` `exigir_autenticacao`, que usa
 | `POST /admin/turmas/<id>/desativar` | `desativar_turma` |
 | `POST /admin/turmas/<id>/excluir` | `excluir_turma` |
 
-As rotas não concentram regras de negócio: elas recebem a requisição, chamam o
+As rotas não concentram regras de negócio: recebem a requisição, chamam o
 serviço, tratam `ValueError` com `flash` e redirecionam.
 
 ## 8. Formulários
@@ -276,18 +264,14 @@ Valida:
 
 - título obrigatório e com no máximo 150 caracteres;
 - descrição obrigatória;
-- tipo obrigatório;
-- link externo opcional, mas obrigatório para curso pago e proibido para
-  gratuito (`validate_link_externo`);
-- valor não negativo;
+- cidade obrigatória e com no máximo 100 caracteres;
 - carga horária mínima 1;
 - vagas não negativas;
 - data final não anterior à inicial (`validate_data_fim`);
-- URLs de imagem e link externo em formato válido.
+- URL de imagem em formato válido.
 
-O template usa `data-tipo-curso` e `data-campo-pago`. O JavaScript em
-`app/static/js/main.js` oculta e desabilita os campos de curso pago quando o tipo
-selecionado é gratuito.
+Os campos de tipo, valor e link externo foram removidos. Não há mais JavaScript
+condicional para cursos pagos: `main.js` apenas fecha mensagens flash.
 
 ### 8.2 `TurmaForm`
 
@@ -305,17 +289,16 @@ Valida:
 
 Arquivo: `app/templates/components/curso_card.html` — macro `curso_card`.
 
-Recebe um `curso` e mostra:
+Mostra:
 
 - imagem ou letra inicial;
-- badge de gratuito/pago;
+- badge `Gratuito · <cidade>`;
 - título com link para o detalhe;
 - descrição resumida;
 - carga horária;
 - disponibilidade de vagas;
 - botão “Ver detalhes”;
-- botão “Comprar” para curso pago;
-- botão “Pré-inscrição” somente para curso gratuito elegível **e** com vagas.
+- botão “Pré-inscrição” somente quando elegível **e** com vagas.
 
 ### 9.2 Catálogo
 
@@ -323,10 +306,8 @@ Arquivo: `app/templates/catalogo/lista_cursos.html`.
 
 Variáveis recebidas da rota:
 
-- `cursos`: lista de cursos ativos;
-- `termo`: busca digitada;
-- `tipo_selecionado`: tipo do filtro;
-- `tipos`: enumeração `TipoCurso` para montar o `select`.
+- `cursos`: lista de cursos visíveis;
+- `termo`: busca digitada.
 
 ### 9.3 Detalhe do curso
 
@@ -339,27 +320,31 @@ Variáveis:
 
 Decisões feitas no template:
 
-- curso pago mostra o botão de compra externa;
-- curso gratuito mostra pré-inscrição somente se `aceita_pre_inscricao` e
-  `possui_vagas`;
+- pré-inscrição aparece somente se `aceita_pre_inscricao` e `possui_vagas`;
 - turmas ativas são listadas com dias, horário, período e vagas;
 - turma sem vagas recebe o selo “Vagas esgotadas”;
-- curso pago com turmas também exibe os horários e o link de compra;
-- curso gratuito sem turmas permite pré-inscrição quando ainda há
-  disponibilidade.
+- curso sem turmas permite pré-inscrição quando ainda há disponibilidade.
 
 ### 9.4 Painel administrativo
 
-- `admin/cursos/lista.html`: ações de editar, gerenciar turmas, ativar,
-  desativar e excluir.
-- `admin/cursos/formulario.html`: cadastro e edição de curso.
+- `admin/cursos/lista.html`: coluna `Cidade` e ações de editar, gerenciar turmas,
+  ativar, desativar e excluir.
+- `admin/cursos/formulario.html`: cadastro e edição somente de cursos
+  gratuitos, com campo `cidade`.
 - `admin/cursos/turmas.html`: lista de turmas, situação, ocupação e ações.
 - `admin/cursos/turma_formulario.html`: cadastro e edição de turma.
 - `admin/dashboard.html`: indicadores e cursos recentes.
 
-## 10. Controle de vagas
+### 9.5 Link externo único
 
-O controle é feito **por turma**, mas o curso também oferece uma visão agregada.
+O link para `https://cursos.ce.senac.br/` aparece em:
+
+- `app/templates/components/navbar.html` — “Outros cursos no SENAC”;
+- `app/templates/main/index.html` — “Acesse o portal de cursos do SENAC Ceará”.
+
+Ambos usam `target="_blank"` e `rel="noopener noreferrer"`.
+
+## 10. Controle de vagas
 
 ### 10.1 Turma
 
@@ -392,29 +377,25 @@ senão:
         vagas_disponiveis = max(curso.vagas - curso.vagas_ocupadas, 0)
 ```
 
-`possui_vagas` é `True` quando o curso não está inativo e existe pelo menos
-uma turma ativa disponível. Sem turmas, usa o limite de referência do curso.
-Curso inativo sempre retorna `False`.
+`possui_vagas` é `True` quando o curso não está inativo e existe pelo menos uma
+turma ativa disponível. Sem turmas, usa o limite de referência do curso.
 
 ### 10.3 Exibição pública
 
-- O catálogo e o detalhe não exibem cursos inativos.
+- Catálogo e detalhe não exibem cursos inativos, pagos ou de outra cidade.
 - A página de detalhe não exibe turmas inativas.
-- Cards só oferecem pré-inscrição quando o curso é gratuito, elegível e possui
-  vaga.
+- Cards só oferecem pré-inscrição quando o curso é elegível e possui vaga.
 - Turmas lotadas aparecem como indisponíveis.
-- O curso pago sempre direciona para o link externo individual.
 
 ## 11. Integração com o módulo de inscrições
 
 ### 11.1 Dados disponíveis
 
-O módulo de inscrições consegue obter diretamente dos modelos:
-
 | Necessidade | Como obter |
 | --- | --- |
 | Identificador do curso | `curso.id` |
 | Nome do curso | `curso.titulo` |
+| Cidade do curso | `curso.cidade` |
 | Situação do curso | `curso.ativo` / `curso.situacao` |
 | Curso aceita pré-inscrição | `curso.aceita_pre_inscricao` |
 | Identificador da turma | `turma.id` |
@@ -424,42 +405,26 @@ O módulo de inscrições consegue obter diretamente dos modelos:
 | Dias e período | `turma.dias_semana`, `turma.data_inicio`, `turma.data_fim` |
 | Situação da turma | `turma.ativo` / `turma.situacao` |
 | Disponibilidade | `turma.vagas_disponiveis`, `turma.tem_vagas`, `turma.disponivel` |
-| Ocupação | `turma.vagas_ocupadas` |
-| Vagas totais da turma | `turma.vagas` |
 
-O contrato já existente em `app/contracts.py` continua sendo o ponto de
-referência entre os módulos.
+O contrato em `app/contracts.py` continua sendo o ponto de referência entre os
+módulos.
 
-### 11.2 Regras que o módulo de inscrições deve aplicar
+### 11.2 Regras aplicadas
 
-O módulo de cursos **expõe** a disponibilidade, mas não persiste inscrições. O
-bloqueio efetivo deve ser aplicado pelo módulo de inscrições antes de criar o
-registro:
+`InscricaoService.criar_pre_inscricao` valida curso ativo/elegível, turma
+pertencente ao curso, turma ativa, disponibilidade e CPF duplicado antes de
+persistir com `status = StatusInscricao.RECEBIDA`.
 
-1. buscar o curso e garantir que ele existe;
-2. garantir que `curso.aceita_pre_inscricao` é verdadeiro;
-3. se houver `turma_id`, garantir que a turma pertence ao curso;
-4. garantir que `turma.ativo` é verdadeiro;
-5. garantir que `turma.tem_vagas` (ou `turma.disponivel`) é verdadeiro;
-6. persistir a `Inscricao` com `status = StatusInscricao.RECEBIDA`;
-7. tratar concorrência: duas inscrições simultâneas podem ler a mesma
-   disponibilidade. Para produção, a validação e a inserção devem ocorrer na
-   mesma transação ou com bloqueio adequado.
+### 11.3 Proteção pública
 
-O arquivo atual `app/blueprints/inscricoes/routes.py` é um placeholder e não
-persiste dados. A implementação concreta pertence à outra integrante.
+- Catálogo e detalhe escondem cursos inativos ou de outra cidade.
+- Detalhe esconde turmas inativas.
+- Links de pré-inscrição só aparecem quando há vaga.
+- A rota de pré-inscrição vincula `Inscricao.turma` quando `turma_id` é enviado
+  pelo detalhe do curso.
 
-### 11.3 Pendência de integração
-
-Enquanto o módulo de inscrições não persistir os dados, a proteção pública é:
-
-- catálogo e detalhe escondem cursos inativos;
-- detalhe esconde turmas inativas;
-- links de pré-inscrição só aparecem quando há vaga.
-
-Ainda falta a validação transacional no momento do `POST` da pré-inscrição. Isso
-deve ser feito no módulo de inscrições, sem alterar as rotas administrativas de
-cursos. Nenhum arquivo do módulo de inscrições foi modificado aqui.
+Em bancos com alta concorrência, use `SELECT ... FOR UPDATE` ou travamento
+otimista para evitar que duas requisições ocupem a última vaga.
 
 ## 12. Testes
 
@@ -467,40 +432,31 @@ Arquivo principal: `tests/test_cursos.py`.
 
 Os testes cobrem:
 
-- criação de curso gratuito e geração de slug;
-- unicidade de slug;
-- curso pago exigindo link externo válido;
-- curso gratuito descartando link externo;
-- ativação e desativação de curso;
-- atualização de curso preservando slug;
-- validação de descrição, valor, datas e horários;
-- múltiplas turmas com horários diferentes;
-- controle de vagas por turma;
+- criação de curso gratuito, slug único e cidade padrão;
+- criação em outra cidade e ativação/desativação;
+- atualização preservando slug;
+- validação de descrição, cidade, datas e horários;
+- múltiplas turmas e controle de vagas por turma;
 - cancelamento liberando vaga;
-- disponibilidade agregada de várias turmas;
 - exclusão bloqueada quando há inscrições;
-- catálogo somente com cursos ativos;
-- busca e filtro por tipo;
-- detalhe com turmas e vagas;
-- turma inativa oculta no detalhe;
-- cards sem pré-inscrição quando não há vagas;
-- curso pago com link de compra e sem pré-inscrição;
-- curso gratuito e curso pago inativo sem redirecionamento de compra;
+- catálogo somente com cursos de Sobral;
+- detalhe de curso de outra cidade retornando 404;
+- rota de compra removida;
+- link externo único na navbar e na home;
 - cadastro, edição e ações administrativas;
-- proteção das rotas administrativas;
-- dados expostos para integração com inscrições.
+- proteção das rotas administrativas.
 
 Comando:
 
 ```bash
 source .venv/bin/activate
-pytest
+python -m pytest -q
 ```
 
 Resultado da última execução:
 
 ```text
-66 passed
+85 passed
 ```
 
 ## 13. Como executar o projeto
@@ -509,6 +465,7 @@ Resultado da última execução:
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 flask --app run.py db upgrade
+flask --app run.py seed-demo
 flask --app run.py run --debug
 ```
 
@@ -518,19 +475,13 @@ Acesse:
 - catálogo: <http://127.0.0.1:5000/cursos>
 - painel: <http://127.0.0.1:5000/admin/>
 
-Para criar o administrador:
-
-```bash
-flask --app run.py criar-admin
-```
-
 ## 14. Roteiro rápido de estudo
 
 1. Leia `app/models/curso.py` e `app/models/turma.py`.
 2. Entenda as propriedades de vagas: `vagas_ocupadas`, `vagas_disponiveis`,
    `tem_vagas`, `disponivel` e `possui_vagas`.
 3. Leia `app/services/curso_service.py`, começando por `criar_curso`,
-   `atualizar_curso`, `criar_turma` e `_slug_unico`.
+   `listar_cursos_publicos`, `atualizar_curso` e `_slug_unico`.
 4. Leia `app/forms/curso.py` para entender a validação de entrada.
 5. Siga uma requisição pública em `app/blueprints/catalogo/routes.py`.
 6. Siga uma requisição administrativa em `app/blueprints/admin/routes.py`.
@@ -539,10 +490,11 @@ flask --app run.py criar-admin
 
 ## 15. Pendências e limites do módulo
 
-- A persistência de pré-inscrições ainda é placeholder e pertence à outra
-  integrante.
-- O bloqueio transacional de vagas no `POST` de inscrição depende do módulo de
-  inscrições.
-- Login/logout e análise de inscrições também pertencem ao outro módulo.
+- O bloqueio de vagas usa a transação do SQLAlchemy; em SQLite, com escritas
+  concorrentes, ainda pode ser necessário travamento explícito.
+- A edição do título de um curso recalcula o slug; links antigos podem mudar.
+- Não há paginação nas listagens administrativas.
+- As colunas `link_externo` e `valor` permanecem apenas para compatibilidade
+  histórica e devem ser removidas em uma futura limpeza de esquema.
 - O módulo não usa dados reais de alunos; todos os exemplos e testes usam dados
   fictícios.

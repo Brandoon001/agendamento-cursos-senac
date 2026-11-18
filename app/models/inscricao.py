@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 from app.extensions import db
 from app.models.base import TimestampMixin
-from app.models.enums import StatusInscricao
+from app.models.enums import STATUS_LABELS, StatusInscricao
 
 
 def _valores_enum(enum_cls: type) -> list[str]:
@@ -91,6 +93,17 @@ class Inscricao(TimestampMixin, db.Model):
         ),
         db.Index("ix_inscricoes_curso_status", "curso_id", "status"),
     )
+
+    @property
+    def protocolo(self) -> str:
+        """Código legível exibido ao candidato e ao administrador."""
+        ano = self.criado_em.year if self.criado_em else date.today().year
+        return f"INS-{ano}-{self.id:05d}"
+
+    @property
+    def situacao(self) -> str:
+        """Descrição amigável da situação atual."""
+        return STATUS_LABELS.get(self.status, "Desconhecida")
 
     def __repr__(self) -> str:
         return f"<Inscricao {self.nome_completo!r} curso={self.curso_id}>"

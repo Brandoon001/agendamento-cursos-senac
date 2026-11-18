@@ -34,28 +34,15 @@
       </div>
 
       <div class="field">
-        {{ formulario.tipo.label }} *
-        {{ formulario.tipo(data_tipo_curso="true") }}
-        {% for erro in formulario.tipo.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+        {{ formulario.cidade.label }} *
+        {{ formulario.cidade }}
+        {% for erro in formulario.cidade.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
       </div>
 
       <div class="field">
         {{ formulario.slug.label }}
         {{ formulario.slug(placeholder="gerado-automaticamente") }}
         {% for erro in formulario.slug.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
-      </div>
-
-      <div class="field" data-campo-pago>
-        {{ formulario.valor.label }}
-        {{ formulario.valor(step="0.01", min="0") }}
-        {% for erro in formulario.valor.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
-      </div>
-
-      <div class="field" data-campo-pago>
-        {{ formulario.link_externo.label }}
-        {{ formulario.link_externo(placeholder="https://...") }}
-        {% for erro in formulario.link_externo.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
-        <small class="muted">Obrigatório apenas para cursos pagos.</small>
       </div>
 
       <div class="field">

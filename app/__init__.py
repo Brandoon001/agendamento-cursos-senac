@@ -8,7 +8,7 @@ from flask import Flask
 
 from app.blueprints import register_blueprints
 from app.cli import registrar_comandos
-from app.config import get_config
+from app.config import ProductionConfig, get_config
 from app.errors import register_error_handlers
 from app.extensions import csrf, db, login_manager, migrate
 
@@ -22,7 +22,13 @@ def create_app(config_name: str | None = None) -> Flask:
             ``development``.
     """
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object(get_config(config_name))
+    configuracao = get_config(config_name)
+    app.config.from_object(configuracao)
+    if configuracao is ProductionConfig and app.config["SECRET_KEY"] in {
+        "dev-apenas-troque-esta-chave",
+        "troque-esta-chave-por-um-valor-aleatorio-seguro",
+    }:
+        raise RuntimeError("Defina SECRET_KEY antes de usar a configuração de produção.")
 
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 

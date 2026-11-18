@@ -5,13 +5,19 @@
 
 {% block content %}
   <section class="hero">
-    <p class="eyebrow">Catálogo de cursos</p>
+    <p class="eyebrow">SENAC Sobral &middot; cursos gratuitos</p>
     <h1>Encontre o próximo curso para você</h1>
     <p>
-      Cursos pagos com inscrição pelo site oficial e cursos gratuitos com
-      pré-inscrição interna, acompanhados pela equipe do SENAC.
+      Faça sua pré-inscrição nos cursos gratuitos disponíveis na unidade do
+      SENAC em Sobral. A equipe entrará em contato para confirmar sua vaga.
     </p>
-    <a class="button" href="{{ url_for('catalogo.listar') }}">Ver todos os cursos</a>
+    <a class="button" href="{{ url_for('catalogo.listar') }}">Ver cursos gratuitos</a>
+    <p class="external-course-link">
+      Procura outras opções?
+      <a href="{{ config.PORTAL_CURSOS_URL }}" target="_blank" rel="noopener noreferrer">
+        Acesse o portal de cursos do SENAC Ceará
+      </a>
+    </p>
   </section>
 
   <section class="section-block" aria-labelledby="cursos-destaque">

@@ -28,9 +28,19 @@
     </article>
   </section>
 
+  <section class="stats-grid stats-grid--status" aria-label="Inscrições por situação">
+    {% for status, total in contadores_inscricoes.items() %}
+      <a class="stat-card stat-card--link" href="{{ url_for('admin.inscricoes', status=status.value) }}">
+        <span class="stat-card__value">{{ total }}</span>
+        <span class="stat-card__label">{{ status_labels[status] }}</span>
+      </a>
+    {% endfor %}
+  </section>
+
   <div class="admin-actions">
     <a class="button" href="{{ url_for('admin.novo_curso') }}">Novo curso</a>
     <a class="button button--secondary" href="{{ url_for('admin.cursos') }}">Gerenciar cursos</a>
+    <a class="button button--secondary" href="{{ url_for('admin.inscricoes') }}">Ver inscrições</a>
   </div>
 
   <section class="section-block">
@@ -45,7 +55,7 @@
           <thead>
             <tr>
               <th>Curso</th>
-              <th>Tipo</th>
+              <th>Cidade</th>
               <th>Situação</th>
               <th></th>
             </tr>
@@ -54,7 +64,7 @@
             {% for curso in cursos_recentes %}
               <tr>
                 <td>{{ curso.titulo }}</td>
-                <td>{{ "Gratuito" if curso.e_gratuito else "Pago" }}</td>
+                <td>{{ curso.cidade }}</td>
                 <td>
                   <span class="badge badge--{{ 'ativo' if curso.ativo else 'inativo' }}">
                     {{ "Ativo" if curso.ativo else "Inativo" }}

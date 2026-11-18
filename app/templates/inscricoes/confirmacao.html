@@ -3,16 +3,48 @@
 {% block title %}Inscrição registrada | SENAC Cursos{% endblock %}
 
 {% block content %}
-  <section class="page-header">
-    <p class="eyebrow">Confirmação</p>
-    <h1>Pré-inscrição #{{ inscricao_id }}</h1>
-  </section>
+  <section class="comprovante">
+    <p class="eyebrow">Confirmação de pré-inscrição</p>
+    <h1>Inscrição registrada!</h1>
 
-  <section class="placeholder">
-    <p>
-      Esta página exibirá a confirmação e o protocolo da pré-inscrição após a
-      implementação do módulo de inscrições.
-    </p>
-    <a class="button button--secondary" href="{{ url_for('catalogo.listar') }}">Voltar ao catálogo</a>
+    <div class="comprovante__protocolo">
+      <span>Protocolo</span>
+      <strong>{{ inscricao.protocolo }}</strong>
+    </div>
+
+    <dl class="detail-list">
+      <div>
+        <dt>Candidato</dt>
+        <dd>{{ inscricao.nome_completo }}</dd>
+      </div>
+      <div>
+        <dt>Curso</dt>
+        <dd>{{ inscricao.curso.titulo }}</dd>
+      </div>
+      {% if inscricao.turma %}
+        <div>
+          <dt>Turma</dt>
+          <dd>{{ inscricao.turma.nome }} &middot; {{ inscricao.turma.horario_formatado }}</dd>
+        </div>
+      {% endif %}
+      <div>
+        <dt>Situação</dt>
+        <dd><span class="badge badge--recebida">{{ inscricao.situacao }}</span></dd>
+      </div>
+      <div>
+        <dt>Registrada em</dt>
+        <dd>{{ inscricao.criado_em.strftime("%d/%m/%Y às %H:%M") }}</dd>
+      </div>
+    </dl>
+
+    <div class="notice">
+      Guarde este protocolo. A equipe do SENAC entrará em contato pelos dados
+      informados para confirmar sua vaga.
+    </div>
+
+    <div class="form-actions">
+      <a class="button" href="{{ url_for('catalogo.listar') }}">Ver outros cursos</a>
+      <a class="button button--secondary" href="{{ url_for('main.index') }}">Voltar ao início</a>
+    </div>
   </section>
 {% endblock %}

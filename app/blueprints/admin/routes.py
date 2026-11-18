@@ -2,18 +2,32 @@
 
 from __future__ import annotations
 
-from flask import flash, redirect, render_template, request, url_for
-from flask_login import login_required
+from datetime import date
+from urllib.parse import urlsplit
+
+from flask import (
+    Response,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
+from flask_login import current_user, login_required
 
 from app.blueprints.admin import bp
 from app.extensions import db
 from app.forms.curso import CursoForm, TurmaForm
 from app.models import Curso, Inscricao, Turma
+from app.models.enums import STATUS_LABELS, StatusInscricao
 from app.services.curso_service import (
     CAMPOS_CURSO,
     CAMPOS_TURMA,
     CursoService,
 )
+from app.services.exportacao_service import gerar_planilha_inscricoes
+from app.services.inscricao_service import InscricaoService
 
 
 @bp.before_request
@@ -38,11 +52,72 @@ def dashboard():
         total_inscricoes=db.session.scalar(
             db.select(db.func.count()).select_from(Inscricao)
         ),
+        contadores_inscricoes=InscricaoService().contar_por_status(),
+        status_labels=STATUS_LABELS,
         cursos_recentes=sorted(
             cursos,
             key=lambda curso: curso.criado_em,
             reverse=True,
         )[:5],
+    )
+
+
+@bp.get("/inscricoes")
+def inscricoes():
+    """Lista e filtra as pré-inscrições recebidas."""
+    termo, filtro_status, filtro_curso_id = _filtros_de_inscricoes()
+
+    return render_template(
+        "admin/inscricoes.html",
+        inscricoes=InscricaoService().listar_inscricoes(
+            curso_id=filtro_curso_id,
+            status=filtro_status,
+            termo=termo or None,
+        ),
+        contadores=InscricaoService().contar_por_status(),
+        cursos=CursoService().listar_todos(),
+        status_labels=STATUS_LABELS,
+        status_opcoes=StatusInscricao,
+        termo=termo,
+        filtro_status=filtro_status or "",
+        filtro_curso_id=filtro_curso_id,
+    )
+
+
+@bp.post("/inscricoes/<int:inscricao_id>/status")
+def alterar_status_inscricao(inscricao_id: int):
+    """Registra a nova situação da inscrição e o administrador responsável."""
+    try:
+        InscricaoService().alterar_status(
+            inscricao_id,
+            request.form.get("status", ""),
+            current_user.id,
+        )
+    except ValueError as erro:
+        flash(str(erro), "error")
+    else:
+        flash("Situação da inscrição atualizada.", "success")
+    return redirect(url_for("admin.inscricoes", **_parametros_de_retorno()))
+
+
+@bp.get("/inscricoes/exportar")
+def exportar_inscricoes():
+    """Baixa as inscrições filtradas como planilha Excel (.xlsx)."""
+    termo, filtro_status, filtro_curso_id = _filtros_de_inscricoes()
+    inscricoes_filtradas = InscricaoService().listar_inscricoes(
+        curso_id=filtro_curso_id,
+        status=filtro_status,
+        termo=termo or None,
+    )
+    conteudo = gerar_planilha_inscricoes(inscricoes_filtradas)
+    nome_arquivo = f"inscricoes-{date.today().isoformat()}.xlsx"
+
+    return Response(
+        conteudo,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{nome_arquivo}"'
+        },
     )
 
 
@@ -66,6 +141,9 @@ def novo_curso():
     """Cadastra um novo curso."""
     formulario = CursoForm()
     servico = CursoService()
+
+    if request.method == "GET":
+        formulario.cidade.data = current_app.config["CIDADE_PADRAO"]
 
     if formulario.validate_on_submit():
         try:
@@ -96,9 +174,6 @@ def editar_curso(curso_id: int):
         return redirect(url_for("admin.cursos"))
 
     formulario = CursoForm(obj=curso)
-
-    if request.method == "GET":
-        formulario.tipo.data = curso.tipo.value
 
     if formulario.validate_on_submit():
         try:
@@ -305,9 +380,33 @@ def _dados_do_formulario(formulario) -> dict[str, object]:
     return {campo: getattr(formulario, campo).data for campo in campos}
 
 
+def _filtros_de_inscricoes() -> tuple[str, str | None, int | None]:
+    """Lê os filtros da listagem de inscrições a partir da query string."""
+    termo = request.args.get("q", "").strip()
+    filtro_status = request.args.get("status", "").strip() or None
+    curso_id_raw = request.args.get("curso_id", "").strip()
+    filtro_curso_id = int(curso_id_raw) if curso_id_raw.isdigit() else None
+    return termo, filtro_status, filtro_curso_id
+
+
+def _parametros_de_retorno() -> dict[str, str]:
+    """Mantém os filtros ao voltar da alteração de situação."""
+    return {
+        chave: request.args.get(chave, "")
+        for chave in ("q", "status", "curso_id")
+    }
+
+
 def _destino_admin(endpoint: str, **valores) -> str:
-    """Volta para a listagem anterior quando o formulário veio dela."""
+    """Volta para a listagem anterior apenas quando o caminho é interno."""
     proximo = request.form.get("proximo") or request.args.get("proximo")
-    if proximo and proximo.startswith("/admin/"):
-        return proximo
+    if proximo:
+        partes = urlsplit(proximo)
+        if (
+            not partes.scheme
+            and not partes.netloc
+            and partes.path.startswith("/admin/")
+            and not proximo.startswith("//")
+        ):
+            return proximo
     return url_for(endpoint, **valores)

@@ -6,22 +6,32 @@
   <section class="auth-card">
     <p class="eyebrow">Área restrita</p>
     <h1>Acesso administrativo</h1>
-    <p class="muted">
-      O formulário abaixo é o ponto de integração da autenticação. A validação
-      das credenciais deve ser implementada em
-      <code>app/blueprints/auth/routes.py</code>.
-    </p>
+    <p class="muted">Informe suas credenciais para gerenciar cursos, turmas e inscrições.</p>
 
-    <form method="post" action="{{ url_for('auth.login') }}" class="form">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <form
+      method="post"
+      class="form"
+      novalidate
+      action="{{ url_for('auth.login', next=proximo) if proximo else url_for('auth.login') }}"
+    >
+      {{ formulario.hidden_tag() }}
 
-      <label for="email">E-mail</label>
-      <input id="email" name="email" type="email" autocomplete="username" required>
+      <div class="field">
+        {{ formulario.email.label }} *
+        {{ formulario.email(autocomplete="username", placeholder="admin@senac.br") }}
+        {% for erro in formulario.email.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
 
-      <label for="senha">Senha</label>
-      <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+      <div class="field">
+        {{ formulario.senha.label }} *
+        {{ formulario.senha(autocomplete="current-password") }}
+        {% for erro in formulario.senha.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+      </div>
 
-      <button type="submit" class="button">Entrar</button>
+      <div class="form-actions">
+        <button type="submit" class="button">Entrar</button>
+        <a class="button button--secondary" href="{{ url_for('main.index') }}">Voltar ao início</a>
+      </div>
     </form>
   </section>
 {% endblock %}

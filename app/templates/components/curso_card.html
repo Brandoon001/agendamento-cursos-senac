@@ -9,8 +9,8 @@
     {% endif %}
 
     <div class="course-card__body">
-      <span class="badge badge--{{ curso.tipo.value }}">
-        {{ "Gratuito" if curso.e_gratuito else "Pago" }}
+      <span class="badge badge--gratuito">
+        Gratuito &middot; {{ curso.cidade }}
       </span>
 
       <h2 class="course-card__title">
@@ -40,11 +40,7 @@
         <a class="button button--small button--secondary" href="{{ url_for('catalogo.detalhe', curso_id=curso.id) }}">
           Ver detalhes
         </a>
-        {% if curso.e_pago %}
-          <a class="button button--small" href="{{ url_for('catalogo.comprar', curso_id=curso.id) }}">
-            Comprar
-          </a>
-        {% elif curso.aceita_pre_inscricao and curso.possui_vagas %}
+        {% if curso.aceita_pre_inscricao and curso.possui_vagas %}
           <a class="button button--small" href="{{ url_for('inscricoes.pre_inscricao', curso_id=curso.id) }}">
             Pré-inscrição
           </a>

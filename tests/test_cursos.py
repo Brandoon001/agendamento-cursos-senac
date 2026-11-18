@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import date, time
-from decimal import Decimal
 
 import pytest
 
@@ -16,7 +15,7 @@ def dados_curso(**alteracoes):
     dados = {
         "titulo": "Curso Fictício de Teste",
         "descricao": "Conteúdo fictício usado apenas em testes.",
-        "tipo": TipoCurso.GRATUITO.value,
+        "cidade": "Sobral",
         "carga_horaria": 20,
         "vagas": 10,
         "ativo": True,
@@ -58,19 +57,27 @@ def test_servico_gera_slug_unico(app):
     assert segundo.slug == "curso-repetido-2"
 
 
-def test_curso_pago_exige_link_externo(app):
-    with pytest.raises(ValueError, match="link externo"):
-        CursoService().criar_curso(
-            dados_curso(tipo=TipoCurso.PAGO.value)
-        )
-
-
-def test_curso_gratuito_descarta_link_externo(app):
+def test_servico_cria_curso_em_outra_cidade_quando_informado(app):
     curso = CursoService().criar_curso(
-        dados_curso(link_externo="https://example.test/compra")
+        dados_curso(titulo="Curso em Fortaleza", cidade="Fortaleza")
     )
 
+    assert curso.cidade == "Fortaleza"
+    assert curso.tipo is TipoCurso.GRATUITO
+
+
+def test_servico_ignora_campos_de_curso_pago(app):
+    curso = CursoService().criar_curso(
+        dados_curso(
+            tipo="pago",
+            link_externo="https://example.test/compra",
+            valor="350.00",
+        )
+    )
+
+    assert curso.tipo is TipoCurso.GRATUITO
     assert curso.link_externo is None
+    assert curso.valor is None
 
 
 def test_ativacao_e_desativacao_do_curso(app):
@@ -193,21 +200,20 @@ def test_catalogo_lista_somente_cursos_ativos(client, app):
     assert ativo.ativo is True
 
 
-def test_catalogo_filtra_por_tipo(client, app):
+def test_catalogo_lista_apenas_cursos_de_sobral(client, app):
     servico = CursoService()
-    servico.criar_curso(dados_curso(titulo="Curso Gratuito Filtro"))
+    servico.criar_curso(dados_curso(titulo="Curso de Sobral Filtro"))
     servico.criar_curso(
         dados_curso(
-            titulo="Curso Pago Filtro",
-            tipo=TipoCurso.PAGO.value,
-            link_externo="https://example.test/curso-pago",
+            titulo="Curso de Fortaleza Filtro",
+            cidade="Fortaleza",
         )
     )
 
-    resposta = client.get("/cursos?tipo=gratuito")
+    resposta = client.get("/cursos")
 
-    assert b"Curso Gratuito Filtro" in resposta.data
-    assert b"Curso Pago Filtro" not in resposta.data
+    assert b"Curso de Sobral Filtro" in resposta.data
+    assert b"Curso de Fortaleza Filtro" not in resposta.data
 
 
 def test_catalogo_busca_por_nome(client, app):
@@ -255,19 +261,13 @@ def test_detalhe_de_curso_inativo_retorna_404(client, app):
     assert resposta.status_code == 404
 
 
-def test_curso_pago_redireciona_para_link_externo(client, app):
+def test_rota_de_compra_de_curso_pago_nao_existe(client, app):
     servico = CursoService()
-    curso = servico.criar_curso(
-        dados_curso(
-            tipo=TipoCurso.PAGO.value,
-            link_externo="https://example.test/comprar",
-        )
-    )
+    curso = servico.criar_curso(dados_curso())
 
     resposta = client.get(f"/cursos/{curso.id}/comprar")
 
-    assert resposta.status_code == 302
-    assert resposta.headers["Location"] == "https://example.test/comprar"
+    assert resposta.status_code == 404
 
 
 def test_admin_de_cursos_exige_autenticacao(client):
@@ -283,7 +283,7 @@ def test_admin_cadastra_curso(client_autenticado, app):
         data={
             "titulo": "Curso Administrativo Fictício",
             "descricao": "Curso criado pelo painel em teste.",
-            "tipo": TipoCurso.GRATUITO.value,
+            "cidade": "Sobral",
             "carga_horaria": "30",
             "vagas": "12",
             "ativo": "y",
@@ -302,22 +302,22 @@ def test_admin_cadastra_curso(client_autenticado, app):
     assert resposta.headers["Location"].endswith(f"/admin/cursos/{curso.id}/turmas")
 
 
-def test_admin_recusa_curso_pago_sem_link(client_autenticado, app):
+def test_admin_exige_cidade_do_curso(client_autenticado, app):
     resposta = client_autenticado.post(
         "/admin/cursos/novo",
         data={
-            "titulo": "Curso Pago Inválido",
-            "descricao": "Curso pago sem link externo.",
-            "tipo": TipoCurso.PAGO.value,
+            "titulo": "Curso Sem Cidade Inválido",
+            "descricao": "Curso sem cidade não pode ser cadastrado.",
+            "cidade": "   ",
             "ativo": "y",
         },
     )
 
     assert resposta.status_code == 200
-    assert b"link externo" in resposta.data
+    assert b"cidade" in resposta.data.lower()
     assert (
         db.session.scalar(
-            db.select(Curso).where(Curso.titulo == "Curso Pago Inválido")
+            db.select(Curso).where(Curso.titulo == "Curso Sem Cidade Inválido")
         )
         is None
     )
@@ -351,7 +351,7 @@ def test_admin_edita_curso(client_autenticado, app):
         data={
             "titulo": "Curso Editado Fictício",
             "descricao": "Descrição atualizada no teste.",
-            "tipo": TipoCurso.GRATUITO.value,
+            "cidade": "Sobral",
             "carga_horaria": "40",
             "vagas": "20",
             "ativo": "y",
@@ -526,16 +526,15 @@ def test_servico_atualiza_curso_e_preserva_slug(app):
         curso,
         dados_curso(
             titulo="Curso Atualizável",
-            tipo=TipoCurso.PAGO.value,
-            link_externo="https://example.test/compra-atualizada",
-            valor="249.90",
+            cidade="Sobral",
+            carga_horaria="25",
         ),
     )
 
     assert atualizado.id == curso.id
     assert atualizado.slug == slug_original
-    assert atualizado.e_pago is True
-    assert atualizado.valor == Decimal("249.90")
+    assert atualizado.cidade == "Sobral"
+    assert atualizado.carga_horaria == 25
 
 
 def test_servico_exige_descricao_do_curso(app):
@@ -543,24 +542,10 @@ def test_servico_exige_descricao_do_curso(app):
         CursoService().criar_curso(dados_curso(descricao="   "))
 
 
-def test_servico_rejeita_link_externo_invalido_para_curso_pago(app):
-    with pytest.raises(ValueError, match="link externo"):
+def test_servico_rejeita_cidade_muito_longa(app):
+    with pytest.raises(ValueError, match="cidade"):
         CursoService().criar_curso(
-            dados_curso(
-                tipo=TipoCurso.PAGO.value,
-                link_externo="pagina-de-compra-sem-endereco",
-            )
-        )
-
-
-def test_servico_rejeita_valor_negativo(app):
-    with pytest.raises(ValueError, match="valor"):
-        CursoService().criar_curso(
-            dados_curso(
-                tipo=TipoCurso.PAGO.value,
-                link_externo="https://example.test/compra",
-                valor="-1",
-            )
+            dados_curso(cidade="Cidade " + "a" * 100)
         )
 
 
@@ -697,47 +682,16 @@ def test_card_oculta_pre_inscricao_quando_nao_ha_vagas(client, app):
     assert f"/inscricoes/{curso.id}/pre-inscricao".encode() not in resposta.data
 
 
-def test_curso_pago_exibe_turmas_sem_link_de_pre_inscricao(client, app):
+def test_detalhe_de_curso_fora_de_sobral_retorna_404(client, app):
     servico = CursoService()
     curso = servico.criar_curso(
         dados_curso(
-            titulo="Curso Pago com Turma Fictício",
-            tipo=TipoCurso.PAGO.value,
-            link_externo="https://example.test/comprar-curso",
+            titulo="Curso de Outra Cidade Fictício",
+            cidade="Fortaleza",
         )
-    )
-    servico.criar_turma(
-        curso.id,
-        dados_turma(nome="Turma Paga Fictícia"),
     )
 
     resposta = client.get(f"/cursos/{curso.id}")
-
-    assert resposta.status_code == 200
-    assert b"Turma Paga Fict" in resposta.data
-    assert b"Comprar no site oficial" in resposta.data
-    assert f"/inscricoes/{curso.id}/pre-inscricao".encode() not in resposta.data
-
-
-def test_curso_gratuito_nao_redireciona_para_compra(client, app):
-    curso = CursoService().criar_curso(dados_curso())
-
-    resposta = client.get(f"/cursos/{curso.id}/comprar")
-
-    assert resposta.status_code == 404
-
-
-def test_curso_pago_inativo_nao_redireciona_para_compra(client, app):
-    servico = CursoService()
-    curso = servico.criar_curso(
-        dados_curso(
-            tipo=TipoCurso.PAGO.value,
-            link_externo="https://example.test/comprar-inativo",
-        )
-    )
-    servico.definir_situacao(curso, False)
-
-    resposta = client.get(f"/cursos/{curso.id}/comprar")
 
     assert resposta.status_code == 404
 
@@ -767,7 +721,7 @@ def test_admin_valida_datas_do_curso(client_autenticado, app):
         data={
             "titulo": "Curso com Datas Inválidas",
             "descricao": "Curso fictício com período invertido.",
-            "tipo": TipoCurso.GRATUITO.value,
+            "cidade": "Sobral",
             "data_inicio": "2026-02-01",
             "data_fim": "2026-01-01",
             "ativo": "y",

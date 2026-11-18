@@ -5,10 +5,9 @@ from __future__ import annotations
 import re
 import unicodedata
 from datetime import date, time
-from decimal import Decimal, InvalidOperation
-from typing import Iterable, Mapping
-from urllib.parse import urlparse
+from typing import Mapping
 
+from flask import current_app
 from sqlalchemy import or_
 
 from app.extensions import db
@@ -18,10 +17,8 @@ from app.models.enums import TipoCurso
 CAMPOS_CURSO = (
     "titulo",
     "slug",
+    "cidade",
     "descricao",
-    "tipo",
-    "link_externo",
-    "valor",
     "carga_horaria",
     "data_inicio",
     "data_fim",
@@ -50,16 +47,25 @@ def gerar_slug(texto: str) -> str:
     return slug or "curso"
 
 
+def cidade_padrao() -> str:
+    """Cidade usada no catálogo e como padrão nos novos cursos."""
+    return str(current_app.config.get("CIDADE_PADRAO", "Sobral"))
+
+
 class CursoService:
     """Operações de consulta e manutenção de cursos e turmas."""
 
     def listar_cursos_publicos(
         self,
         termo: str | None = None,
-        tipo: str | TipoCurso | None = None,
+        cidade: str | None = None,
     ) -> list[Curso]:
-        """Lista somente cursos ativos, com busca e filtro opcionais."""
-        consulta = db.select(Curso).where(Curso.ativo.is_(True))
+        """Lista cursos ativos, gratuitos e da cidade configurada."""
+        consulta = db.select(Curso).where(
+            Curso.ativo.is_(True),
+            Curso.tipo == TipoCurso.GRATUITO,
+            Curso.cidade == (cidade or cidade_padrao()),
+        )
 
         if termo:
             busca = f"%{termo.strip()}%"
@@ -69,10 +75,6 @@ class CursoService:
                     Curso.descricao.ilike(busca),
                 )
             )
-
-        tipo_normalizado = self._normalizar_tipo(tipo)
-        if tipo_normalizado is not None:
-            consulta = consulta.where(Curso.tipo == tipo_normalizado)
 
         consulta = consulta.order_by(Curso.titulo.asc())
         return list(db.session.scalars(consulta).all())
@@ -104,13 +106,6 @@ class CursoService:
 
     def obter_curso(self, curso_id: int) -> Curso | None:
         return db.session.get(Curso, curso_id)
-
-    def obter_link_compra(self, curso: Curso) -> str:
-        if not curso.e_pago:
-            raise ValueError("Somente cursos pagos possuem link de compra.")
-        if not curso.link_externo:
-            raise ValueError("O curso pago não possui link externo cadastrado.")
-        return curso.link_externo
 
     def criar_curso(self, dados: Mapping[str, object]) -> Curso:
         curso = Curso()
@@ -223,10 +218,6 @@ class CursoService:
         *,
         criando: bool,
     ) -> None:
-        tipo = self._normalizar_tipo(dados.get("tipo"))
-        if tipo is None:
-            raise ValueError("Selecione o tipo do curso.")
-
         titulo = self._texto(dados.get("titulo"))
         if not titulo:
             raise ValueError("Informe o nome do curso.")
@@ -235,17 +226,11 @@ class CursoService:
         if not descricao:
             raise ValueError("Informe a descrição do curso.")
 
-        link_externo = self._texto(dados.get("link_externo"))
+        cidade = self._texto(dados.get("cidade")) or cidade_padrao()
+        if len(cidade) > 100:
+            raise ValueError("A cidade deve ter no máximo 100 caracteres.")
+
         slug_informado = self._texto(dados.get("slug"))
-
-        if tipo is TipoCurso.PAGO and not link_externo:
-            raise ValueError("Cursos pagos precisam de um link externo.")
-        if tipo is TipoCurso.PAGO:
-            link_externo = self._validar_link_externo(link_externo)
-        if tipo is TipoCurso.GRATUITO:
-            link_externo = None
-            curso.valor = None
-
         carga_horaria = self._inteiro(dados.get("carga_horaria"))
         vagas = self._inteiro(dados.get("vagas"))
         data_inicio = self._data(dados.get("data_inicio"))
@@ -260,17 +245,12 @@ class CursoService:
                 "A data de término não pode ser anterior à data de início."
             )
 
-        valor = None
-        if tipo is TipoCurso.PAGO:
-            valor = self._decimal(dados.get("valor"))
-            if valor is not None and valor < 0:
-                raise ValueError("O valor do curso não pode ser negativo.")
-
         curso.titulo = titulo
         curso.descricao = descricao
-        curso.tipo = tipo
-        curso.link_externo = link_externo
-        curso.valor = valor
+        curso.cidade = cidade
+        curso.tipo = TipoCurso.GRATUITO
+        curso.link_externo = None
+        curso.valor = None
         curso.carga_horaria = carga_horaria
         curso.data_inicio = data_inicio
         curso.data_fim = data_fim
@@ -342,19 +322,6 @@ class CursoService:
             raise ValueError(mensagem) from erro
 
     @staticmethod
-    def _normalizar_tipo(
-        valor: str | TipoCurso | None,
-    ) -> TipoCurso | None:
-        if valor is None or valor == "":
-            return None
-        if isinstance(valor, TipoCurso):
-            return valor
-        try:
-            return TipoCurso(str(valor).strip().lower())
-        except ValueError:
-            return None
-
-    @staticmethod
     def _texto(valor: object) -> str:
         if valor is None:
             return ""
@@ -389,17 +356,6 @@ class CursoService:
             ) from erro
 
     @staticmethod
-    def _decimal(valor: object) -> Decimal | None:
-        if valor is None or valor == "":
-            return None
-        if isinstance(valor, Decimal):
-            return valor
-        try:
-            return Decimal(str(valor))
-        except (InvalidOperation, TypeError, ValueError) as erro:
-            raise ValueError("Informe um valor numérico válido.") from erro
-
-    @staticmethod
     def _data(valor: object) -> date | None:
         if valor is None or valor == "":
             return None
@@ -425,25 +381,13 @@ class CursoService:
                 "Informe um horário válido (HH:MM)."
             ) from erro
 
-    @staticmethod
-    def _validar_link_externo(link: str) -> str:
-        endereco = urlparse(link)
-        if endereco.scheme not in {"http", "https"} or not endereco.netloc:
-            raise ValueError(
-                "Informe um link externo válido, iniciado por http:// ou "
-                "https://."
-            )
-        return link
 
 
 def curso_esta_visivel(curso: Curso | None) -> bool:
-    """Atalho usado pelas rotas públicas."""
-    return curso is not None and curso.ativo is not False
-
-
-def contar_por_tipo(cursos: Iterable[Curso]) -> dict[str, int]:
-    """Retorna a quantidade de cursos por tipo."""
-    contagem = {tipo.value: 0 for tipo in TipoCurso}
-    for curso in cursos:
-        contagem[curso.tipo.value] = contagem.get(curso.tipo.value, 0) + 1
-    return contagem
+    """Atalho usado pelas rotas públicas do catálogo de Sobral."""
+    return (
+        curso is not None
+        and curso.ativo is not False
+        and curso.tipo is TipoCurso.GRATUITO
+        and curso.cidade == cidade_padrao()
+    )

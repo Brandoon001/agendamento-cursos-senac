@@ -6,14 +6,11 @@ from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
     DateField,
-    DecimalField,
     IntegerField,
-    SelectField,
     StringField,
     TextAreaField,
     TimeField,
 )
-from wtforms.fields.choices import SelectChoice
 from wtforms.validators import (
     DataRequired,
     Length,
@@ -23,11 +20,9 @@ from wtforms.validators import (
     ValidationError,
 )
 
-from app.models.enums import TipoCurso
-
 
 class CursoForm(FlaskForm):
-    """Cadastro e edição de cursos pagos e gratuitos."""
+    """Cadastro e edição de cursos gratuitos do SENAC Sobral."""
 
     titulo = StringField(
         "Nome do curso",
@@ -55,35 +50,16 @@ class CursoForm(FlaskForm):
             DataRequired(message="Informe a descrição do curso."),
         ],
     )
-    tipo = SelectField(
-        "Tipo de curso",
-        choices=[
-            SelectChoice(TipoCurso.GRATUITO.value, "Gratuito"),
-            SelectChoice(TipoCurso.PAGO.value, "Pago"),
-        ],
-        validators=[DataRequired(message="Selecione o tipo do curso.")],
-    )
-    link_externo = StringField(
-        "Link externo de compra",
+    cidade = StringField(
+        "Cidade",
+        default="Sobral",
         validators=[
-            Optional(),
-            URL(message="Informe um link externo válido."),
+            DataRequired(message="Informe a cidade do curso."),
             Length(
-                max=500,
-                message="O link deve ter no máximo 500 caracteres.",
+                max=100,
+                message="A cidade deve ter no máximo 100 caracteres.",
             ),
         ],
-    )
-    valor = DecimalField(
-        "Valor (R$)",
-        validators=[
-            Optional(),
-            NumberRange(
-                min=0,
-                message="O valor não pode ser negativo.",
-            ),
-        ],
-        places=2,
     )
     carga_horaria = IntegerField(
         "Carga horária (horas)",
@@ -125,16 +101,6 @@ class CursoForm(FlaskForm):
         ],
     )
     ativo = BooleanField("Curso ativo", default=True)
-
-    def validate_link_externo(self, campo) -> None:
-        if self.tipo.data == TipoCurso.PAGO.value and not campo.data:
-            raise ValidationError(
-                "Informe o link externo individual do curso pago."
-            )
-        if self.tipo.data == TipoCurso.GRATUITO.value and campo.data:
-            raise ValidationError(
-                "Cursos gratuitos não devem possuir link externo."
-            )
 
     def validate_data_fim(self, campo) -> None:
         if (
