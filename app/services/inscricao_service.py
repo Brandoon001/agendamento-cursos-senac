@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from app.extensions import db
+from app.forms.inscricao import cpf_e_valido, formatar_cpf, somente_digitos
 from app.models import Curso, Inscricao, Turma
 from app.models.enums import StatusInscricao
 
@@ -22,7 +23,11 @@ class InscricaoService:
         dados: Mapping[str, object],
         turma_id: int | None = None,
     ) -> Inscricao:
-        """Persiste uma inscrição RECEBIDA após validar curso, turma e CPF."""
+        """Persiste uma inscrição RECEBIDA após validar curso, turma e CPF.
+
+        Um CPF válido é obrigatório e só pode existir uma inscrição por pessoa
+        em todo o sistema, independentemente do curso.
+        """
         curso = db.session.get(Curso, curso_id)
         if curso is None or not curso.aceita_pre_inscricao:
             raise ValueError("Este curso não aceita pré-inscrições no momento.")
@@ -35,15 +40,19 @@ class InscricaoService:
             if not turma.tem_vagas:
                 raise ValueError("Não há vagas disponíveis nesta turma.")
 
-        cpf = dados.get("cpf") or None
-        if cpf and self._cpf_ja_inscrito(curso_id, str(cpf)):
-            raise ValueError("Já existe uma pré-inscrição com este CPF no curso.")
+        digitos_cpf = somente_digitos(str(dados.get("cpf") or ""))
+        if not digitos_cpf:
+            raise ValueError("Informe seu CPF.")
+        if not cpf_e_valido(digitos_cpf):
+            raise ValueError("Informe um CPF válido.")
+        if self._cpf_ja_inscrito(digitos_cpf):
+            raise ValueError("Já existe uma pré-inscrição com este CPF.")
 
         inscricao = Inscricao(
             curso_id=curso_id,
             turma_id=turma.id if turma else None,
             nome_completo=str(dados.get("nome_completo", "")).strip(),
-            cpf=cpf,
+            cpf=formatar_cpf(digitos_cpf),
             email=dados.get("email") or None,
             telefone=dados.get("telefone") or None,
             data_nascimento=dados.get("data_nascimento"),
@@ -57,7 +66,7 @@ class InscricaoService:
         except IntegrityError:
             db.session.rollback()
             raise ValueError(
-                "Já existe uma pré-inscrição com este CPF no curso."
+                "Já existe uma pré-inscrição com este CPF."
             ) from None
         return inscricao
 
@@ -122,12 +131,11 @@ class InscricaoService:
         ).all()
         return {status: total for status, total in linhas}
 
-    def _cpf_ja_inscrito(self, curso_id: int, cpf: str) -> bool:
-        consulta = db.select(db.func.count()).where(
-            Inscricao.curso_id == curso_id,
-            Inscricao.cpf == cpf,
+    def _cpf_ja_inscrito(self, digitos_cpf: str) -> bool:
+        cpfs = db.session.scalars(db.select(Inscricao.cpf)).all()
+        return any(
+            somente_digitos(str(cpf or "")) == digitos_cpf for cpf in cpfs
         )
-        return bool(db.session.scalar(consulta))
 
     @staticmethod
     def _converter_status(status: StatusInscricao | str) -> StatusInscricao | None:

@@ -245,7 +245,7 @@ Regras refletidas no banco:
 - um curso pode ter várias turmas, cada uma com dias, horários e vagas
   próprios;
 - `Inscricao.turma_id` é opcional e vinculado com `ON DELETE SET NULL`;
-- quando informado, o CPF não pode se repetir no mesmo curso;
+- CPF é obrigatório nas novas inscrições e não pode se repetir no sistema;
 - curso com inscrições **não pode ser excluído**; o histórico é preservado pela
   chave estrangeira `ON DELETE RESTRICT`. Nesse caso, use `Curso.ativo = False`
   para arquivar/desativar o curso;
@@ -253,9 +253,9 @@ Regras refletidas no banco:
 - o controle de vagas é calculado por turma, desconsiderando inscrições com
   status `cancelada`. Turma sem quantidade de vagas definida é ilimitada.
 
-CPF, e-mail e telefone são opcionais no modelo. A obrigatoriedade desses campos
-deve ser definida posteriormente pelo módulo de inscrições, sem exigir mudança
-estrutural na fundação.
+CPF, e-mail e telefone aceitam nulos no modelo para preservar registros antigos.
+O formulário e o serviço de inscrições exigem CPF válido, e a constraint
+`uq_inscricoes_cpf` garante uma única inscrição por pessoa.
 
 As enumerações `TipoCurso` (somente `GRATUITO`) e `StatusInscricao` ficam em
 `app/models/enums.py`. Os status de inscrição são: `RECEBIDA`, `EM_ANALISE`,
@@ -337,13 +337,13 @@ Regras implementadas:
 1. Aceite apenas cursos gratuitos, ativos e que aceitem pré-inscrição.
 2. Valide o CSRF (já habilitado globalmente; use `csrf_token()` no formulário).
 3. Persista `Inscricao` com status inicial `StatusInscricao.RECEBIDA`.
-4. Defina a obrigatoriedade de CPF, e-mail e telefone na validação do módulo;
-   o modelo aceita esses campos nulos.
+4. CPF é obrigatório e validado pelo formulário e pelo serviço; e-mail e
+   telefone também são obrigatórios no formulário público.
 5. O módulo de cursos já expõe turmas e o cálculo de vagas em
    `Turma.vagas_disponiveis`. Se a inscrição estiver vinculada a uma turma,
    valide a disponibilidade antes de persistir e associe `Inscricao.turma`.
-6. Trate `IntegrityError` para CPF duplicado no mesmo curso quando o CPF for
-   informado.
+6. Trate `IntegrityError` para CPF duplicado em qualquer curso; o serviço
+   normaliza a máscara antes de consultar e gravar.
 7. Nunca use dados reais de alunos em exemplos, testes ou seeds;
 8. o protocolo exibido na confirmação tem o formato `INS-ANO-00001`;
 9. a confirmação só pode ser vista pela sessão que criou a inscrição (ou pelo
@@ -366,12 +366,14 @@ Regras implementadas:
 2. Implemente `logout` com `logout_user`.
 3. Mantenha o `before_request` do Blueprint `admin`; novas rotas já ficam
    protegidas automaticamente.
-4. Use `flask --app run.py criar-admin` para criar o único administrador.
-5. Alterações de status registram `administrador_id` na inscrição;
-6. ao gerenciar cursos com inscrições, **arquive** (`ativo = False`) em vez de
+4. O link de login não aparece na navegação pública. O acesso administrativo é
+   feito diretamente em `/auth/login` por quem já conhece o endereço.
+5. Use `flask --app run.py criar-admin` para criar o único administrador.
+6. Alterações de status registram `administrador_id` na inscrição;
+7. ao gerenciar cursos com inscrições, **arquive** (`ativo = False`) em vez de
    excluir. A exclusão é bloqueada pelo banco para preservar o histórico;
-7. `/admin/inscricoes` filtra por nome/CPF/e-mail, situação e curso;
-8. `/admin/inscricoes/exportar` gera um `.xlsx` com exatamente o mesmo filtro da
+8. `/admin/inscricoes` filtra por nome/CPF/e-mail, situação e curso;
+9. `/admin/inscricoes/exportar` gera um `.xlsx` com exatamente o mesmo filtro da
    tela, incluindo protocolo, contato, turma, situação e observações.
 
 ### Alterações no banco
@@ -389,19 +391,23 @@ Mantenha as mudanças de esquema pequenas e compatíveis com os demais módulos.
 A migração `b7c1d2e3f4a5` já aplica as revisões de status, campos opcionais e
 preservação do histórico; a migração `c3d4e5f6a7b8` cria as turmas e o vínculo
 opcional `inscricoes.turma_id`. A migração `f6a7b8c9d0e1` adiciona
-`cursos.cidade` (padrão `Sobral`) e exclui cursos pagos e seu histórico.
-Migrações anteriores não devem ser apagadas. A `b7c1d2e3f4a5` converte os status
-antigos assim: `pendente` → `recebida`, `lista_espera` → `em_analise`,
-`confirmada` → `finalizada` e `cancelada` → `cancelada`.
+`cursos.cidade` (padrão `Sobral`) e exclui cursos pagos e seu histórico. A
+migração `a2b3c4d5e6f7` substitui a unicidade de CPF por curso pela unicidade
+global, normalizando CPFs antigos para `000.000.000-00` e mantendo apenas a
+inscrição mais antiga de cada CPF. Migrações anteriores não devem ser apagadas.
+A `b7c1d2e3f4a5` converte os status antigos assim: `pendente` → `recebida`,
+`lista_espera` → `em_analise`, `confirmada` → `finalizada` e `cancelada` →
+`cancelada`.
 
 Se precisar reverter apenas a última revisão:
 
 ```bash
-flask --app run.py db downgrade c3d4e5f6a7b8
+flask --app run.py db downgrade f6a7b8c9d0e1
 ```
 
-O downgrade remove a coluna `cidade`. Os cursos pagos excluídos pela última
-migração não podem ser restaurados.
+O downgrade restaura a constraint por curso. Um downgrade até `c3d4e5f6a7b8`
+remove a coluna `cidade`. Os cursos pagos excluídos pela migração
+`f6a7b8c9d0e1` não podem ser restaurados.
 
 ## Regras para integração
 

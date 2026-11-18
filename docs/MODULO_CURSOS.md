@@ -40,12 +40,13 @@ ambiente.
 | `app/templates/catalogo/lista_cursos.html` | Catálogo com busca por nome/descrição. |
 | `app/templates/catalogo/detalhe_curso.html` | Detalhe, turmas, vagas e pré-inscrição. |
 | `app/templates/components/curso_card.html` | Card reutilizável de curso. |
-| `app/templates/components/navbar.html` | Link externo único para o portal de cursos do Ceará. |
+| `app/templates/components/navbar.html` | Link externo único para o portal de cursos do Ceará; sem link de login público. |
 | `app/templates/admin/cursos/lista.html` | Listagem administrativa de cursos. |
 | `app/templates/admin/cursos/formulario.html` | Formulário de curso com campo `cidade`. |
 | `app/static/css/style.css` | Identidade visual e responsividade. |
 | `tests/test_cursos.py` | Testes do módulo de cursos, turmas, vagas e rotas. |
 | `migrations/versions/f6a7b8c9d0e1_cidade_sobral_e_remove_cursos_pagos.py` | Adiciona `cidade`, exclui cursos pagos. |
+| `migrations/versions/a2b3c4d5e6f7_cpf_unico_global.py` | Torna o CPF único globalmente nas inscrições. |
 
 ## 3. Fluxo de uma requisição
 
@@ -412,8 +413,10 @@ módulos.
 ### 11.2 Regras aplicadas
 
 `InscricaoService.criar_pre_inscricao` valida curso ativo/elegível, turma
-pertencente ao curso, turma ativa, disponibilidade e CPF duplicado antes de
-persistir com `status = StatusInscricao.RECEBIDA`.
+pertencente ao curso, turma ativa, disponibilidade e CPF antes de persistir com
+`status = StatusInscricao.RECEBIDA`. O CPF é obrigatório, validado e normalizado
+para `000.000.000-00`; uma pessoa só pode se inscrever uma vez no sistema,
+independentemente do curso.
 
 ### 11.3 Proteção pública
 
@@ -456,7 +459,7 @@ python -m pytest -q
 Resultado da última execução:
 
 ```text
-85 passed
+88 passed
 ```
 
 ## 13. Como executar o projeto

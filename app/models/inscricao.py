@@ -19,8 +19,8 @@ class Inscricao(TimestampMixin, db.Model):
     A validação de que o curso é gratuito e está ativo deve ser feita pela
     camada de serviço do módulo de inscrições antes da persistência.
 
-    CPF, e-mail e telefone são opcionais nesta fundação. A obrigatoriedade
-    desses campos será definida posteriormente pelo módulo de inscrições.
+    Cada CPF pode ter apenas uma inscrição em todo o sistema. O serviço exige
+    CPF válido nas novas inscrições; registros antigos podem permanecer sem CPF.
     """
 
     __tablename__ = "inscricoes"
@@ -87,9 +87,8 @@ class Inscricao(TimestampMixin, db.Model):
 
     __table_args__ = (
         db.UniqueConstraint(
-            "curso_id",
             "cpf",
-            name="uq_inscricoes_curso_cpf",
+            name="uq_inscricoes_cpf",
         ),
         db.Index("ix_inscricoes_curso_status", "curso_id", "status"),
     )

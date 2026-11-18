@@ -73,16 +73,19 @@ def test_curso_usa_sobral_como_cidade_padrao(app):
     assert curso.cidade == "Sobral"
 
 
-def test_cpf_nao_pode_repetir_no_mesmo_curso(app):
-    curso = Curso(
-        titulo="Curso Gratuito de Teste",
-        descricao="Curso fictício usado apenas em testes.",
-        tipo=TipoCurso.GRATUITO,
-    )
-    db.session.add(curso)
+def test_cpf_nao_pode_repetir_em_cursos_diferentes(app):
+    cursos = [
+        Curso(
+            titulo=f"Curso Gratuito {indice}",
+            descricao="Curso fictício usado apenas em testes.",
+            tipo=TipoCurso.GRATUITO,
+        )
+        for indice in (1, 2)
+    ]
+    db.session.add_all(cursos)
     db.session.commit()
 
-    for _ in range(2):
+    for curso in cursos:
         db.session.add(
             Inscricao(
                 curso=curso,

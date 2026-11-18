@@ -91,18 +91,52 @@ def test_servico_rejeita_curso_inativo(app):
         )
 
 
-def test_servico_impede_cpf_duplicado_no_mesmo_curso(app):
-    curso = criar_curso_gratuito()
+def test_servico_impede_cpf_duplicado_em_qualquer_curso(app):
+    servico_cursos = CursoService()
+    primeiro = servico_cursos.criar_curso(
+        {
+            "titulo": "Curso A Fictício",
+            "descricao": "Curso fictício usado apenas em testes.",
+            "cidade": "Sobral",
+            "ativo": True,
+        }
+    )
+    segundo = servico_cursos.criar_curso(
+        {
+            "titulo": "Curso B Fictício",
+            "descricao": "Curso fictício usado apenas em testes.",
+            "cidade": "Sobral",
+            "ativo": True,
+        }
+    )
     servico = InscricaoService()
-    servico.criar_pre_inscricao(
-        curso.id,
+    inscricao = servico.criar_pre_inscricao(
+        primeiro.id,
         {"nome_completo": "Primeiro Aluno", "cpf": "529.982.247-25"},
     )
 
+    assert inscricao.cpf == "529.982.247-25"
+
     with pytest.raises(ValueError, match="CPF"):
         servico.criar_pre_inscricao(
+            segundo.id,
+            {"nome_completo": "Segundo Aluno", "cpf": "52998224725"},
+        )
+
+
+def test_servico_exige_cpf_valido(app):
+    curso = criar_curso_gratuito()
+
+    with pytest.raises(ValueError, match="CPF"):
+        InscricaoService().criar_pre_inscricao(
             curso.id,
-            {"nome_completo": "Segundo Aluno", "cpf": "529.982.247-25"},
+            {"nome_completo": "Aluno Fictício"},
+        )
+
+    with pytest.raises(ValueError, match="CPF"):
+        InscricaoService().criar_pre_inscricao(
+            curso.id,
+            {"nome_completo": "Aluno Fictício", "cpf": "123.456.789-00"},
         )
 
 

@@ -66,3 +66,18 @@ def test_painel_administrativo_exige_autenticacao(client):
 
     assert resposta.status_code == 302
     assert "/auth/login" in resposta.headers["Location"]
+
+
+def test_link_de_login_nao_aparece_para_visitantes(client):
+    for pagina in ("/", "/cursos"):
+        resposta = client.get(pagina)
+
+        assert resposta.status_code == 200
+        assert b' href="/auth/login"' not in resposta.data
+        assert b">Entrar<" not in resposta.data
+
+
+def test_login_continua_disponivel_pela_url_direta(client):
+    resposta = client.get("/auth/login")
+
+    assert resposta.status_code == 200
