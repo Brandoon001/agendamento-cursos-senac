@@ -17,8 +17,9 @@ class Inscricao(TimestampMixin, db.Model):
     A validação de que o curso é gratuito e está ativo deve ser feita pela
     camada de serviço do módulo de inscrições antes da persistência.
 
-    CPF, e-mail e telefone são opcionais nesta fundação. A obrigatoriedade
-    desses campos será definida posteriormente pelo módulo de inscrições.
+    Os campos de contato e data de nascimento permanecem nullable no banco
+    para preservar flexibilidade de dados internos/legados. O formulário
+    público de pré-inscrição exige CPF, e-mail, telefone e data de nascimento.
     """
 
     __tablename__ = "inscricoes"

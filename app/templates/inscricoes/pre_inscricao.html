@@ -1,25 +1,188 @@
 {% extends "base.html" %}
 
-{% block title %}Pré-inscrição | SENAC Cursos{% endblock %}
+{% block title %}Pré-inscrição | {{ curso.titulo }}{% endblock %}
 
 {% block content %}
-  <section class="page-header">
-    <p class="eyebrow">Pré-inscrição</p>
-    <h1>Inscrição no curso #{{ curso_id }}</h1>
-  </section>
+  <header class="page-header preinscricao-header">
+    <p class="eyebrow">Inscrição em curso gratuito</p>
+    <h1>Faça sua pré-inscrição</h1>
+    <p>Preencha seus dados para demonstrar interesse no curso. Confira as informações antes de enviar.</p>
+  </header>
 
-  <section class="placeholder">
-    <h2>Ponto de integração</h2>
-    <p>
-      O formulário será implementado pelo módulo de inscrições. Campos previstos
-      no modelo <code>Inscricao</code>: nome completo, CPF, e-mail, telefone,
-      data de nascimento e observações.
-    </p>
-    <ul>
-      <li>Validar que o curso é gratuito, ativo e aceita pré-inscrição.</li>
-      <li>Validar CSRF no envio do formulário.</li>
-      <li>Impedir CPF duplicado no mesmo curso.</li>
-      <li>Persistir somente após validação dos dados.</li>
-    </ul>
-  </section>
+  <div class="preinscricao-layout">
+    <section class="form-panel" aria-labelledby="form-title">
+      <div class="form-panel__header">
+        <div>
+          <p class="eyebrow">Seus dados</p>
+          <h2 id="form-title">Dados do participante</h2>
+        </div>
+        <span class="required-hint"><span aria-hidden="true">*</span> Obrigatório</span>
+      </div>
+
+      {% if form.errors %}
+        <div class="validation-summary" role="alert" aria-live="polite">
+          <strong>Confira os campos destacados.</strong>
+          <p>Encontramos informações que precisam ser corrigidas antes do envio.</p>
+        </div>
+      {% endif %}
+
+      <form method="post" class="form preinscricao-form">
+        {{ form.hidden_tag() }}
+
+        <div class="form-grid">
+          <div class="form-field form-field--full{% if form.nome_completo.errors %} has-error{% endif %}">
+            {{ form.nome_completo.label }} <span class="required-mark" aria-hidden="true">*</span>
+            {{ form.nome_completo(
+              class_="field-control",
+              autocomplete="name",
+              placeholder="Ex.: Maria da Silva",
+              required=true,
+              maxlength="150",
+              aria_invalid="true" if form.nome_completo.errors else "false",
+              aria_describedby="nome-completo-error" if form.nome_completo.errors else "nome-completo-help"
+            ) }}
+            <small class="field-help" id="nome-completo-help">Digite seu nome completo, sem abreviações.</small>
+            {% if form.nome_completo.errors %}
+              <ul class="field-errors" id="nome-completo-error">
+                {% for erro in form.nome_completo.errors %}<li>{{ erro }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="form-field{% if form.cpf.errors %} has-error{% endif %}">
+            {{ form.cpf.label }} <span class="required-mark" aria-hidden="true">*</span>
+            {{ form.cpf(
+              class_="field-control",
+              inputmode="numeric",
+              autocomplete="off",
+              placeholder="000.000.000-00",
+              required=true,
+              maxlength="14",
+              data_mask="cpf",
+              aria_invalid="true" if form.cpf.errors else "false",
+              aria_describedby="cpf-error" if form.cpf.errors else "cpf-help"
+            ) }}
+            <small class="field-help" id="cpf-help">Informe os 11 números do seu CPF.</small>
+            {% if form.cpf.errors %}
+              <ul class="field-errors" id="cpf-error">
+                {% for erro in form.cpf.errors %}<li>{{ erro }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="form-field{% if form.telefone.errors %} has-error{% endif %}">
+            {{ form.telefone.label }} <span class="required-mark" aria-hidden="true">*</span>
+            {{ form.telefone(
+              class_="field-control",
+              type="tel",
+              autocomplete="tel",
+              inputmode="tel",
+              placeholder="(88) 99999-9999",
+              required=true,
+              maxlength="15",
+              data_mask="telefone",
+              aria_invalid="true" if form.telefone.errors else "false",
+              aria_describedby="telefone-error" if form.telefone.errors else "telefone-help"
+            ) }}
+            <small class="field-help" id="telefone-help">Inclua o DDD para facilitar nosso contato.</small>
+            {% if form.telefone.errors %}
+              <ul class="field-errors" id="telefone-error">
+                {% for erro in form.telefone.errors %}<li>{{ erro }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="form-field form-field--full{% if form.email.errors %} has-error{% endif %}">
+            {{ form.email.label }} <span class="required-mark" aria-hidden="true">*</span>
+            {{ form.email(
+              class_="field-control",
+              type="email",
+              autocomplete="email",
+              placeholder="seuemail@exemplo.com",
+              required=true,
+              maxlength="255",
+              aria_invalid="true" if form.email.errors else "false",
+              aria_describedby="email-error" if form.email.errors else "email-help"
+            ) }}
+            <small class="field-help" id="email-help">Use um endereço de e-mail que você consulte.</small>
+            {% if form.email.errors %}
+              <ul class="field-errors" id="email-error">
+                {% for erro in form.email.errors %}<li>{{ erro }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="form-field form-field--full{% if form.data_nascimento.errors %} has-error{% endif %}">
+            {{ form.data_nascimento.label }} <span class="required-mark" aria-hidden="true">*</span>
+            {{ form.data_nascimento(
+              class_="field-control",
+              type="date",
+              autocomplete="bday",
+              required=true,
+              aria_invalid="true" if form.data_nascimento.errors else "false",
+              aria_describedby="nascimento-error" if form.data_nascimento.errors else "nascimento-help"
+            ) }}
+            <small class="field-help" id="nascimento-help">Informe sua data de nascimento.</small>
+            {% if form.data_nascimento.errors %}
+              <ul class="field-errors" id="nascimento-error">
+                {% for erro in form.data_nascimento.errors %}<li>{{ erro }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="form-field form-field--full{% if form.observacoes.errors %} has-error{% endif %}">
+            {{ form.observacoes.label }} <span class="optional-label">Opcional</span>
+            {{ form.observacoes(
+              class_="field-control field-control--textarea",
+              rows="4",
+              placeholder="Se desejar, informe alguma observação.",
+              maxlength="2000",
+              aria_invalid="true" if form.observacoes.errors else "false"
+            ) }}
+            {% if form.observacoes.errors %}
+              <ul class="field-errors">
+                {% for erro in form.observacoes.errors %}<li>{{ erro }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="disclaimer disclaimer--form" role="note">
+          <strong>Importante:</strong> esta etapa registra apenas seu interesse no curso. A pré-inscrição não garante matrícula nem reserva de vaga. A participação depende da confirmação e dos procedimentos do Senac.
+        </div>
+
+        <div class="form-actions">
+          {{ form.submit(class_="button button--primary button--full", value="Enviar pré-inscrição") }}
+          <a class="text-link" href="{{ url_for('catalogo.detalhe', curso_id=curso.id) }}">Voltar para os detalhes do curso</a>
+        </div>
+      </form>
+    </section>
+
+    <aside class="course-summary" aria-labelledby="course-summary-title">
+      <div class="course-summary__top">
+        <span class="course-tag">Curso selecionado</span>
+        <span class="course-free">Gratuito</span>
+      </div>
+      <h2 id="course-summary-title">{{ curso.titulo }}</h2>
+      {% if curso.descricao %}
+        <p class="course-summary__description">{{ curso.descricao }}</p>
+      {% endif %}
+      <dl class="course-details">
+        {% if curso.carga_horaria %}
+          <div><dt>Carga horária</dt><dd>{{ curso.carga_horaria }} horas</dd></div>
+        {% endif %}
+        {% if curso.data_inicio %}
+          <div><dt>Início previsto</dt><dd>{{ curso.data_inicio.strftime("%d/%m/%Y") }}</dd></div>
+        {% endif %}
+        {% if curso.data_fim %}
+          <div><dt>Término previsto</dt><dd>{{ curso.data_fim.strftime("%d/%m/%Y") }}</dd></div>
+        {% endif %}
+      </dl>
+      <div class="course-summary__note">
+        <span class="course-summary__icon" aria-hidden="true">✓</span>
+        <p>Você está preenchendo a pré-inscrição para este curso. Confira se selecionou a opção correta.</p>
+      </div>
+      <p class="course-summary__disclaimer">A pré-inscrição não representa matrícula confirmada nem garante disponibilidade de vaga.</p>
+    </aside>
+  </div>
 {% endblock %}

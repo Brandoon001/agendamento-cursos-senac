@@ -1,18 +1,33 @@
 {% extends "base.html" %}
 
-{% block title %}Inscrição registrada | SENAC Cursos{% endblock %}
+{% block title %}Pré-inscrição recebida | SENAC Cursos{% endblock %}
 
 {% block content %}
-  <section class="page-header">
-    <p class="eyebrow">Confirmação</p>
-    <h1>Pré-inscrição #{{ inscricao_id }}</h1>
-  </section>
+  <section class="confirmation-page" aria-labelledby="confirmation-title">
+    <div class="confirmation-icon" aria-hidden="true">✓</div>
+    <p class="eyebrow">Solicitação registrada</p>
+    <h1 id="confirmation-title">Recebemos sua pré-inscrição!</h1>
+    <p class="confirmation-lead">Seus dados foram registrados. Guarde o protocolo abaixo para consultar ou informar em um atendimento.</p>
 
-  <section class="placeholder">
-    <p>
-      Esta página exibirá a confirmação e o protocolo da pré-inscrição após a
-      implementação do módulo de inscrições.
-    </p>
-    <a class="button button--secondary" href="{{ url_for('catalogo.listar') }}">Voltar ao catálogo</a>
+    <div class="protocol-card">
+      <span class="protocol-label">Número do protocolo</span>
+      <strong class="protocol-number">{{ "%06d"|format(inscricao.id) }}</strong>
+      <span class="protocol-caption">Identificador da sua pré-inscrição</span>
+    </div>
+
+    <div class="confirmation-details">
+      <h2>Resumo da solicitação</h2>
+      <dl>
+        <div><dt>Participante</dt><dd>{{ inscricao.nome_completo }}</dd></div>
+        <div><dt>Curso</dt><dd>{{ inscricao.curso.titulo }}</dd></div>
+        <div><dt>Situação</dt><dd><span class="status-pill">{{ inscricao.status.value|replace("_", " ")|title }}</span></dd></div>
+      </dl>
+    </div>
+
+    <div class="disclaimer disclaimer--confirmation" role="note">
+      <strong>Atenção:</strong> a pré-inscrição não garante matrícula nem reserva de vaga. Ela registra seu interesse no curso. Aguarde as orientações e a confirmação pelos canais oficiais do Senac.
+    </div>
+
+    <a class="button button--primary" href="{{ url_for('catalogo.listar') }}">Voltar ao catálogo de cursos</a>
   </section>
 {% endblock %}
