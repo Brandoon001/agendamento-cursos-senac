@@ -68,6 +68,22 @@ def test_painel_administrativo_exige_autenticacao(client):
     assert "/auth/login" in resposta.headers["Location"]
 
 
+def test_link_do_portal_nao_aparece_no_login(client):
+    resposta = client.get("/auth/login")
+
+    assert resposta.status_code == 200
+    assert b"Outros cursos no SENAC" not in resposta.data
+    assert b"https://cursos.ce.senac.br/" not in resposta.data
+
+
+def test_link_do_portal_nao_aparece_no_painel_autenticado(client_autenticado):
+    resposta = client_autenticado.get("/admin/")
+
+    assert resposta.status_code == 200
+    assert b"Outros cursos no SENAC" not in resposta.data
+    assert b"https://cursos.ce.senac.br/" not in resposta.data
+
+
 def test_link_de_login_nao_aparece_para_visitantes(client):
     for pagina in ("/", "/cursos"):
         resposta = client.get(pagina)

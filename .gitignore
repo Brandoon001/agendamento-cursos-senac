@@ -19,6 +19,10 @@ instance/*.db
 instance/*.sqlite
 instance/*.sqlite3
 
+# Imagens enviadas pelo painel administrativo
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
 # IDE
 .vscode/
 .idea/

@@ -848,6 +848,15 @@ code {
   font-weight: 600;
 }
 
+.image-preview {
+  display: block;
+  max-width: 240px;
+  height: auto;
+  margin-top: 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+}
+
 .form textarea,
 .form select {
   width: 100%;

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+from urllib.parse import urlsplit
+
+from flask import current_app
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed, FileField
 from wtforms import (
     BooleanField,
     DateField,
@@ -16,9 +20,36 @@ from wtforms.validators import (
     Length,
     NumberRange,
     Optional,
-    URL,
     ValidationError,
 )
+
+from app.config import EXTENSOES_IMAGEM_PERMITIDAS
+
+
+class ImagemUrl:
+    """Aceita URLs http(s) e caminhos locais gerados pelo upload de imagens."""
+
+    def __init__(self, message: str = "Informe uma URL de imagem válida.") -> None:
+        self.message = message
+
+    def __call__(self, form, field) -> None:
+        valor = (field.data or "").strip()
+        if not valor:
+            return
+
+        partes = urlsplit(valor)
+        if partes.scheme in {"http", "https"} and partes.netloc:
+            return
+
+        prefixo = str(
+            current_app.config.get("UPLOAD_URL_PREFIX", "/static/uploads/")
+        )
+        if not partes.scheme and not partes.netloc and valor.startswith(prefixo):
+            nome = valor[len(prefixo) :]
+            if nome and "/" not in nome and "\\" not in nome:
+                return
+
+        raise ValidationError(self.message)
 
 
 class CursoForm(FlaskForm):
@@ -93,10 +124,20 @@ class CursoForm(FlaskForm):
         "URL da imagem",
         validators=[
             Optional(),
-            URL(message="Informe uma URL de imagem válida."),
+            ImagemUrl(),
             Length(
                 max=500,
                 message="A URL deve ter no máximo 500 caracteres.",
+            ),
+        ],
+    )
+    imagem_upload = FileField(
+        "Ou envie uma imagem do computador",
+        validators=[
+            Optional(),
+            FileAllowed(
+                EXTENSOES_IMAGEM_PERMITIDAS,
+                message="Envie uma imagem PNG, JPG, GIF ou WebP.",
             ),
         ],
     )

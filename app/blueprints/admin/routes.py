@@ -28,6 +28,7 @@ from app.services.curso_service import (
 )
 from app.services.exportacao_service import gerar_planilha_inscricoes
 from app.services.inscricao_service import InscricaoService
+from app.services.upload_imagem_service import UploadImagemService
 
 
 @bp.before_request
@@ -146,11 +147,10 @@ def novo_curso():
         formulario.cidade.data = current_app.config["CIDADE_PADRAO"]
 
     if formulario.validate_on_submit():
-        try:
-            curso = servico.criar_curso(_dados_do_formulario(formulario))
-        except ValueError as erro:
-            flash(str(erro), "error")
-        else:
+        curso, erro = _salvar_curso(formulario, servico)
+        if erro:
+            flash(erro, "error")
+        elif curso is not None:
             flash("Curso cadastrado com sucesso.", "success")
             return redirect(
                 url_for("admin.turmas_do_curso", curso_id=curso.id)
@@ -176,11 +176,10 @@ def editar_curso(curso_id: int):
     formulario = CursoForm(obj=curso)
 
     if formulario.validate_on_submit():
-        try:
-            servico.atualizar_curso(curso, _dados_do_formulario(formulario))
-        except ValueError as erro:
-            flash(str(erro), "error")
-        else:
+        curso_salvo, erro = _salvar_curso(formulario, servico, curso)
+        if erro:
+            flash(erro, "error")
+        elif curso_salvo is not None:
             flash("Curso atualizado com sucesso.", "success")
             return redirect(url_for("admin.cursos"))
 
@@ -230,11 +229,13 @@ def excluir_curso(curso_id: int):
         flash("Curso não encontrado.", "error")
         return redirect(url_for("admin.cursos"))
 
+    imagem_url = curso.imagem_url
     try:
         servico.excluir_curso(curso)
     except ValueError as erro:
         flash(str(erro), "error")
     else:
+        UploadImagemService().remover(imagem_url)
         flash("Curso excluído com sucesso.", "success")
 
     return redirect(url_for("admin.cursos"))
@@ -373,6 +374,42 @@ def excluir_turma(turma_id: int):
     return redirect(
         url_for("admin.turmas_do_curso", curso_id=curso_id)
     )
+
+
+def _salvar_curso(
+    formulario: CursoForm,
+    servico: CursoService,
+    curso: Curso | None = None,
+) -> tuple[Curso | None, str | None]:
+    """Persiste o curso e a imagem enviada, substituindo a anterior."""
+    arquivo = formulario.imagem_upload.data
+    nova_url = None
+    if arquivo and arquivo.filename:
+        try:
+            nova_url = UploadImagemService().salvar(arquivo)
+        except ValueError as erro:
+            formulario.imagem_upload.errors.append(str(erro))
+            return None, None
+
+    dados = _dados_do_formulario(formulario)
+    if nova_url:
+        dados["imagem_url"] = nova_url
+    imagem_anterior = curso.imagem_url if curso is not None else None
+
+    try:
+        if curso is None:
+            curso = servico.criar_curso(dados)
+        else:
+            servico.atualizar_curso(curso, dados)
+    except ValueError as erro:
+        if nova_url:
+            UploadImagemService().remover(nova_url)
+        return None, str(erro)
+
+    if imagem_anterior and imagem_anterior != dados.get("imagem_url"):
+        UploadImagemService().remover(imagem_anterior)
+
+    return curso, None
 
 
 def _dados_do_formulario(formulario) -> dict[str, object]:
