@@ -255,7 +255,7 @@ class CursoService:
         curso.data_inicio = data_inicio
         curso.data_fim = data_fim
         curso.vagas = vagas
-        curso.imagem_url = self._texto(dados.get("imagem_url"))
+        curso.imagem_url = self._texto(dados.get("imagem_url")) or None
         curso.ativo = self._booleano(dados.get("ativo"), padrao=True)
 
         base_slug = slug_informado or gerar_slug(titulo)

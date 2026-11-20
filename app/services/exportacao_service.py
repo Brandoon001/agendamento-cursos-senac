@@ -26,6 +26,7 @@ CABECALHOS = (
 )
 
 LARGURAS = (18, 32, 17, 32, 18, 14, 38, 24, 16, 21, 45)
+PREFIXOS_FORMULA = ("=", "+", "-", "@")
 
 
 def gerar_planilha_inscricoes(inscricoes: Iterable[Inscricao]) -> bytes:
@@ -41,29 +42,31 @@ def gerar_planilha_inscricoes(inscricoes: Iterable[Inscricao]) -> bytes:
         celula.alignment = Alignment(vertical="center")
 
     for inscricao in inscricoes:
-        aba.append(
-            [
-                inscricao.protocolo,
-                inscricao.nome_completo,
-                inscricao.cpf or "",
-                inscricao.email or "",
-                inscricao.telefone or "",
-                (
-                    inscricao.data_nascimento.strftime("%d/%m/%Y")
-                    if inscricao.data_nascimento
-                    else ""
-                ),
-                inscricao.curso.titulo if inscricao.curso else "",
-                inscricao.turma.nome if inscricao.turma else "",
-                inscricao.situacao,
-                (
-                    inscricao.criado_em.strftime("%d/%m/%Y %H:%M")
-                    if inscricao.criado_em
-                    else ""
-                ),
-                inscricao.observacoes or "",
-            ]
-        )
+        linha = [
+            inscricao.protocolo,
+            inscricao.nome_completo,
+            inscricao.cpf or "",
+            inscricao.email or "",
+            inscricao.telefone or "",
+            (
+                inscricao.data_nascimento.strftime("%d/%m/%Y")
+                if inscricao.data_nascimento
+                else ""
+            ),
+            inscricao.curso.titulo if inscricao.curso else "",
+            inscricao.turma.nome if inscricao.turma else "",
+            inscricao.situacao,
+            (
+                inscricao.criado_em.strftime("%d/%m/%Y %H:%M")
+                if inscricao.criado_em
+                else ""
+            ),
+            inscricao.observacoes or "",
+        ]
+        aba.append(linha)
+        for indice, valor in enumerate(linha, start=1):
+            if isinstance(valor, str) and valor.startswith(PREFIXOS_FORMULA):
+                aba.cell(row=aba.max_row, column=indice).data_type = "s"
 
     for indice, largura in enumerate(LARGURAS, start=1):
         aba.column_dimensions[get_column_letter(indice)].width = largura

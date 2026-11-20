@@ -1,3 +1,5 @@
+{% from "components/ui.html" import status_badge %}
+
 {% macro curso_card(curso) %}
   <article class="card course-card">
     {% if curso.imagem_url %}
@@ -8,12 +10,10 @@
       </div>
     {% endif %}
 
-    <div class="course-card__body">
-      <span class="badge badge--gratuito">
-        Gratuito &middot; {{ curso.cidade }}
-      </span>
+    <div class="card-body">
+      {{ status_badge('gratuito', 'Gratuito · ' ~ curso.cidade) }}
 
-      <h2 class="course-card__title">
+      <h2 class="card-title">
         <a href="{{ url_for('catalogo.detalhe', curso_id=curso.id) }}">{{ curso.titulo }}</a>
       </h2>
 
@@ -21,9 +21,10 @@
 
       <ul class="course-meta">
         {% if curso.carga_horaria %}
-          <li>{{ curso.carga_horaria }}h</li>
+          <li><i class="bi bi-clock" aria-hidden="true"></i>{{ curso.carga_horaria }}h</li>
         {% endif %}
         <li>
+          <i class="bi bi-people" aria-hidden="true"></i>
           {% if curso.possui_vagas %}
             {% if curso.vagas_disponiveis is not none %}
               {{ curso.vagas_disponiveis }} vaga(s) disponível(is)
@@ -37,11 +38,13 @@
       </ul>
 
       <div class="course-card__actions">
-        <a class="button button--small button--secondary" href="{{ url_for('catalogo.detalhe', curso_id=curso.id) }}">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('catalogo.detalhe', curso_id=curso.id) }}">
+          <i class="bi bi-eye" aria-hidden="true"></i>
           Ver detalhes
         </a>
         {% if curso.aceita_pre_inscricao and curso.possui_vagas %}
-          <a class="button button--small" href="{{ url_for('inscricoes.pre_inscricao', curso_id=curso.id) }}">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('inscricoes.pre_inscricao', curso_id=curso.id) }}">
+            <i class="bi bi-pencil-square" aria-hidden="true"></i>
             Pré-inscrição
           </a>
         {% endif %}

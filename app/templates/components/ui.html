@@ -1,0 +1,86 @@
+{% macro breadcrumb(itens) %}
+  <nav aria-label="Navegação estrutural">
+    <ol class="breadcrumb senac-breadcrumb">
+      {% for item in itens %}
+        {% if item.url %}
+          <li class="breadcrumb-item"><a href="{{ item.url }}">{{ item.label }}</a></li>
+        {% else %}
+          <li class="breadcrumb-item active" aria-current="page">{{ item.label }}</li>
+        {% endif %}
+      {% endfor %}
+    </ol>
+  </nav>
+{% endmacro %}
+
+{% macro field(campo, span=false, help=none, atributos=none) %}
+  {% set erros = campo.errors %}
+  {% set descrito_por = [] %}
+  {% if erros %}{% set _ = descrito_por.append(campo.id ~ '-erros') %}{% endif %}
+  {% if help %}{% set _ = descrito_por.append(campo.id ~ '-ajuda') %}{% endif %}
+
+  {% set classe = 'form-select' if campo.type == 'SelectField' else 'form-control' %}
+  {% if erros %}{% set classe = classe ~ ' is-invalid' %}{% endif %}
+
+  {% set opcoes = {'class': classe} %}
+  {% if campo.flags.required and campo.type != 'BooleanField' %}{% set _ = opcoes.update({'required': true}) %}{% endif %}
+  {% if erros %}{% set _ = opcoes.update({'aria-invalid': 'true', 'aria-describedby': descrito_por|join(' ')}) %}{% elif help %}{% set _ = opcoes.update({'aria-describedby': descrito_por|join(' ')}) %}{% endif %}
+  {% if atributos %}{% for chave, valor in atributos.items() %}{% set _ = opcoes.update({chave: valor}) %}{% endfor %}{% endif %}
+
+  <div class="field{% if span %} field--span-2{% endif %}">
+    {{ campo.label(class='form-label') }}
+    {% if campo.flags.required and campo.type != 'BooleanField' %}<span class="obrigatorio" aria-hidden="true"> *</span>{% endif %}
+    {{ campo(**opcoes) }}
+    {% if help %}
+      <small id="{{ campo.id }}-ajuda" class="form-text text-muted">{{ help }}</small>
+    {% endif %}
+    {% if erros %}
+      <div id="{{ campo.id }}-erros" class="invalid-feedback d-block">
+        {% for erro in erros %}<span class="d-block">{{ erro }}</span>{% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% macro checkbox_field(campo, span=false) %}
+  <div class="field field--checkbox{% if span %} field--span-2{% endif %}">
+    <div class="form-check">
+      {{ campo(class='form-check-input' ~ (' is-invalid' if campo.errors else '')) }}
+      {{ campo.label(class='form-check-label') }}
+      {% if campo.flags.required %}<span class="obrigatorio" aria-hidden="true"> *</span>{% endif %}
+      {% if campo.errors %}
+        <div class="invalid-feedback d-block">
+          {% for erro in campo.errors %}<span class="d-block">{{ erro }}</span>{% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro status_badge(status, rotulo) %}
+  <span class="status-badge status-badge--{{ status }}">{{ rotulo }}</span>
+{% endmacro %}
+
+{% macro stat_card(valor, rotulo, href=none, icone=none) -%}
+  {%- if href -%}
+    <a class="stat-card stat-card--link" href="{{ href }}">
+  {%- else -%}
+    <div class="stat-card">
+  {%- endif -%}
+      <span class="stat-card__icon" aria-hidden="true"><i class="bi bi-{{ icone or 'bar-chart-line' }}"></i></span>
+      <span class="stat-card__value">{{ valor }}</span>
+      <span class="stat-card__label">{{ rotulo }}</span>
+  {%- if href -%}
+    </a>
+  {%- else -%}
+    </div>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro empty_state(titulo, mensagem, icone='inbox') %}
+  <div class="empty-state">
+    <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-{{ icone }}"></i></span>
+    <h2>{{ titulo }}</h2>
+    <p>{{ mensagem }}</p>
+    {{ caller() }}
+  </div>
+{% endmacro %}

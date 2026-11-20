@@ -1,17 +1,21 @@
 {% extends "base.html" %}
 {% from "components/curso_card.html" import curso_card %}
+{% from "components/ui.html" import empty_state %}
 
 {% block title %}Início | SENAC Cursos{% endblock %}
 
 {% block content %}
-  <section class="hero">
+  <section class="senac-hero">
     <p class="eyebrow">SENAC Sobral &middot; cursos gratuitos</p>
     <h1>Encontre o próximo curso para você</h1>
     <p>
       Faça sua pré-inscrição nos cursos gratuitos disponíveis na unidade do
       SENAC em Sobral. A equipe entrará em contato para confirmar sua vaga.
     </p>
-    <a class="button" href="{{ url_for('catalogo.listar') }}">Ver cursos gratuitos</a>
+    <a class="btn btn-accent btn-lg" href="{{ url_for('catalogo.listar') }}">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      Ver cursos gratuitos
+    </a>
     <p class="external-course-link">
       Procura outras opções?
       <a href="{{ config.PORTAL_CURSOS_URL }}" target="_blank" rel="noopener noreferrer">
@@ -20,6 +24,36 @@
     </p>
   </section>
 
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-md-4">
+      <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 h-100">
+        <span class="stat-card__icon mb-0"><i class="bi bi-gift" aria-hidden="true"></i></span>
+        <div>
+          <strong class="d-block">Gratuitos</strong>
+          <span class="text-muted small">Sem custo de inscrição</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 h-100">
+        <span class="stat-card__icon mb-0"><i class="bi bi-geo-alt" aria-hidden="true"></i></span>
+        <div>
+          <strong class="d-block">Sobral</strong>
+          <span class="text-muted small">Unidade do SENAC</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 h-100">
+        <span class="stat-card__icon mb-0"><i class="bi bi-laptop" aria-hidden="true"></i></span>
+        <div>
+          <strong class="d-block">Online</strong>
+          <span class="text-muted small">Pré-inscrição simplificada</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <section class="section-block" aria-labelledby="cursos-destaque">
     <div class="section-heading">
       <div>
@@ -27,7 +61,10 @@
         <h2 id="cursos-destaque">Cursos em destaque</h2>
       </div>
       {% if total_cursos > cursos|length %}
-        <a href="{{ url_for('catalogo.listar') }}">Ver os {{ total_cursos }} cursos</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('catalogo.listar') }}">
+          Ver os {{ total_cursos }} cursos
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
       {% endif %}
     </div>
 
@@ -38,10 +75,8 @@
         {% endfor %}
       </div>
     {% else %}
-      <div class="placeholder">
-        <h2>Nenhum curso publicado</h2>
-        <p>No momento não há cursos ativos no catálogo. Volte em breve.</p>
-      </div>
+      {% call empty_state("Nenhum curso publicado", "No momento não há cursos ativos no catálogo. Volte em breve.", "calendar-x") %}
+      {% endcall %}
     {% endif %}
   </section>
 {% endblock %}

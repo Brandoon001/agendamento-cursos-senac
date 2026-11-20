@@ -1,89 +1,141 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
+{% from "components/ui.html" import stat_card %}
 
 {% block title %}Painel administrativo | SENAC Cursos{% endblock %}
 
 {% block content %}
-  <section class="page-header">
-    <p class="eyebrow">Administração</p>
-    <h1>Painel administrativo</h1>
-    <p>Gerencie cursos, turmas, horários e acompanhe as pré-inscrições.</p>
-  </section>
-
-  <section class="stats-grid" aria-label="Indicadores">
-    <article class="stat-card">
-      <span class="stat-card__value">{{ total_cursos }}</span>
-      <span class="stat-card__label">Cursos cadastrados</span>
-    </article>
-    <article class="stat-card">
-      <span class="stat-card__value">{{ cursos_ativos }}</span>
-      <span class="stat-card__label">Cursos ativos</span>
-    </article>
-    <article class="stat-card">
-      <span class="stat-card__value">{{ total_turmas }}</span>
-      <span class="stat-card__label">Turmas cadastradas</span>
-    </article>
-    <article class="stat-card">
-      <span class="stat-card__value">{{ total_inscricoes }}</span>
-      <span class="stat-card__label">Pré-inscrições recebidas</span>
-    </article>
-  </section>
-
-  <section class="stats-grid stats-grid--status" aria-label="Inscrições por situação">
-    {% for status, total in contadores_inscricoes.items() %}
-      <a class="stat-card stat-card--link" href="{{ url_for('admin.inscricoes', status=status.value) }}">
-        <span class="stat-card__value">{{ total }}</span>
-        <span class="stat-card__label">{{ status_labels[status] }}</span>
+  <section class="admin-page-header">
+    <div>
+      <p class="eyebrow">Administração</p>
+      <h1>Painel administrativo</h1>
+      <p>Gerencie cursos, turmas, horários e acompanhe as pré-inscrições.</p>
+    </div>
+    <div class="admin-actions">
+      <a class="btn btn-primary" href="{{ url_for('admin.novo_curso') }}">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        Novo curso
       </a>
-    {% endfor %}
+    </div>
   </section>
 
-  <div class="admin-actions">
-    <a class="button" href="{{ url_for('admin.novo_curso') }}">Novo curso</a>
-    <a class="button button--secondary" href="{{ url_for('admin.cursos') }}">Gerenciar cursos</a>
-    <a class="button button--secondary" href="{{ url_for('admin.inscricoes') }}">Ver inscrições</a>
-  </div>
+  <section class="row g-3" aria-label="Indicadores gerais">
+    <div class="col-6 col-lg-3">
+      {{ stat_card(total_cursos, 'Cursos cadastrados', icone='journal-bookmark') }}
+    </div>
+    <div class="col-6 col-lg-3">
+      {{ stat_card(cursos_ativos, 'Cursos ativos', icone='check-circle') }}
+    </div>
+    <div class="col-6 col-lg-3">
+      {{ stat_card(total_turmas, 'Turmas cadastradas', icone='calendar-range') }}
+    </div>
+    <div class="col-6 col-lg-3">
+      {{ stat_card(total_inscricoes, 'Pré-inscrições recebidas', icone='person-check') }}
+    </div>
+  </section>
 
-  <section class="section-block">
+  <section class="mt-4" aria-label="Inscrições por situação">
     <div class="section-heading">
-      <h2>Cursos recentes</h2>
-      <a href="{{ url_for('admin.cursos') }}">Ver todos</a>
+      <h2 class="h5 mb-0">Inscrições por situação</h2>
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.inscricoes') }}">Ver todas</a>
+    </div>
+    <div class="row g-3">
+      {%- for status, total in contadores_inscricoes.items() -%}
+        <div class="col-6 col-md-4 col-xl-2">
+          {{ stat_card(total, status_labels[status], url_for('admin.inscricoes', status=status.value), icone='person-badge') }}
+        </div>
+      {%- endfor -%}
+    </div>
+  </section>
+
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-lg-7">
+      <section class="card h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Cursos recentes</h2>
+          {% if cursos_recentes %}
+            <div class="table-responsive">
+              <table class="table senac-table table-hover">
+                <thead>
+                  <tr>
+                    <th scope="col">Curso</th>
+                    <th scope="col">Cidade</th>
+                    <th scope="col">Situação</th>
+                    <th scope="col" class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for curso in cursos_recentes %}
+                    <tr>
+                      <td class="fw-semibold">{{ curso.titulo }}</td>
+                      <td>{{ curso.cidade }}</td>
+                      <td>
+                        <span class="status-badge status-badge--{{ 'ativo' if curso.ativo else 'inativo' }}">
+                          {{ "Ativo" if curso.ativo else "Inativo" }}
+                        </span>
+                      </td>
+                      <td class="text-end">
+                        <div class="table-actions justify-content-end">
+                          <a class="btn btn-sm btn-link" href="{{ url_for('admin.editar_curso', curso_id=curso.id) }}">Editar</a>
+                          <a class="btn btn-sm btn-link" href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Turmas</a>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-3">
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.cursos') }}">Ver todos</a>
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <p class="text-muted">Nenhum curso cadastrado ainda.</p>
+              <a class="btn btn-primary" href="{{ url_for('admin.novo_curso') }}">Cadastrar primeiro curso</a>
+            </div>
+          {% endif %}
+        </div>
+      </section>
     </div>
 
-    {% if cursos_recentes %}
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Curso</th>
-              <th>Cidade</th>
-              <th>Situação</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for curso in cursos_recentes %}
-              <tr>
-                <td>{{ curso.titulo }}</td>
-                <td>{{ curso.cidade }}</td>
-                <td>
-                  <span class="badge badge--{{ 'ativo' if curso.ativo else 'inativo' }}">
-                    {{ "Ativo" if curso.ativo else "Inativo" }}
-                  </span>
-                </td>
-                <td class="table-actions">
-                  <a href="{{ url_for('admin.editar_curso', curso_id=curso.id) }}">Editar</a>
-                  <a href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Turmas</a>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div class="placeholder">
-        <p>Nenhum curso cadastrado ainda.</p>
-        <a class="button" href="{{ url_for('admin.novo_curso') }}">Cadastrar primeiro curso</a>
-      </div>
-    {% endif %}
-  </section>
+    <div class="col-12 col-lg-5">
+      <section class="card h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Distribuição das inscrições</h2>
+          <div class="chart-box">
+            <canvas id="grafico-inscricoes" role="img" aria-label="Gráfico de inscrições por situação"></canvas>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
+  <script>
+    const rotulos = [{% for status, total in contadores_inscricoes.items() %}{{ status_labels[status]|tojson }}{% if not loop.last %},{% endif %}{% endfor %}];
+    const valores = [{% for status, total in contadores_inscricoes.items() %}{{ total }}{% if not loop.last %},{% endif %}{% endfor %}];
+
+    const canvas = document.getElementById("grafico-inscricoes");
+    if (canvas && typeof Chart !== "undefined") {
+      new Chart(canvas, {
+        type: "doughnut",
+        data: {
+          labels: rotulos,
+          datasets: [{
+            data: valores,
+            backgroundColor: ["#004b8d", "#f28c28", "#6f42c1", "#198754", "#dc3545"],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom", labels: { boxWidth: 12, usePointStyle: true } }
+          }
+        }
+      });
+    }
+  </script>
 {% endblock %}

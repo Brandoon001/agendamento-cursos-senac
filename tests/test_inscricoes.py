@@ -276,3 +276,69 @@ def test_exportacao_gera_planilha_excel(client_autenticado):
     assert aba["A2"].value == inscricao.protocolo
     assert aba["B2"].value == "Aluno Fictício"
     assert aba["G2"].value == curso.titulo
+
+
+def test_exportacao_trata_texto_como_texto_e_nao_como_formula(client_autenticado):
+    curso = criar_curso_gratuito()
+    nome = '=HYPERLINK("http://example.com", "clique")'
+    InscricaoService().criar_pre_inscricao(
+        curso.id,
+        {
+            "nome_completo": nome,
+            "cpf": "529.982.247-25",
+        },
+    )
+
+    resposta = client_autenticado.get("/admin/inscricoes/exportar")
+    aba = load_workbook(BytesIO(resposta.data)).active
+    celula = aba["B2"]
+
+    assert celula.data_type == "s"
+    assert celula.value == nome
+
+
+def test_contadores_incluem_situacoes_sem_inscricoes(app):
+    contadores = InscricaoService().contar_por_status()
+
+    assert set(contadores) == set(StatusInscricao)
+    assert all(total == 0 for total in contadores.values())
+
+
+def test_filtro_de_situacao_desconhecida_nao_retorna_todas_as_inscricoes(app):
+    curso = criar_curso_gratuito()
+    InscricaoService().criar_pre_inscricao(
+        curso.id,
+        {
+            "nome_completo": "Aluno Fictício",
+            "cpf": "529.982.247-25",
+        },
+    )
+
+    servico = InscricaoService()
+    assert servico.listar_inscricoes(status="inexistente") == []
+    assert len(servico.listar_inscricoes(status="recebida")) == 1
+
+
+def test_confirmacao_aceita_outra_inscricao_da_mesma_sessao(client):
+    curso = criar_curso_gratuito()
+    servico = InscricaoService()
+
+    primeira = servico.criar_pre_inscricao(
+        curso.id,
+        {
+            "nome_completo": "Primeiro Aluno",
+            "cpf": "529.982.247-25",
+        },
+    )
+    segunda = servico.criar_pre_inscricao(
+        curso.id,
+        {
+            "nome_completo": "Segundo Aluno",
+            "cpf": "168.995.350-09",
+        },
+    )
+    with client.session_transaction() as sessao:
+        sessao["inscricoes_ids"] = [primeira.id, segunda.id]
+
+    assert client.get(f"/inscricoes/{primeira.id}/confirmacao").status_code == 200
+    assert client.get(f"/inscricoes/{segunda.id}/confirmacao").status_code == 200

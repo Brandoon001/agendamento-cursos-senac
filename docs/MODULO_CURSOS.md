@@ -4,6 +4,9 @@ Este documento explica o módulo **Gerenciamento e Apresentação de Cursos**
 (Pessoa A). O objetivo é servir de guia para estudar o código e apresentar o
 projeto, sem substituir a leitura dos arquivos.
 
+Este é um documento de estudo complementar. Para a documentação completa e
+atualizada de todas as áreas, comece pelo [Índice da documentação](INDICE.md).
+
 ## 1. Visão geral
 
 O catálogo é focado em **cursos gratuitos do SENAC em Sobral**. Não há cursos
@@ -66,7 +69,7 @@ ambiente.
 
 1. O administrador acessa `GET /admin/cursos/novo`.
 2. O `before_request` `exigir_autenticacao` exige login.
-3. `novo_curso` cria um `CursoForm` com `cidade` preenchida com `Sobral`.
+3. `novo_curso` cria um `CursoForm` com `cidade` preenchida por `CIDADE_PADRAO`.
 4. No `POST`, `validate_on_submit()` executa as validações.
 5. `_dados_do_formulario` extrai os campos definidos em `CAMPOS_CURSO`.
 6. `CursoService.criar_curso(dados)` força `tipo = GRATUITO`, limpa
@@ -272,7 +275,9 @@ Valida:
 - URL de imagem em formato válido.
 
 Os campos de tipo, valor e link externo foram removidos. Não há mais JavaScript
-condicional para cursos pagos: `main.js` apenas fecha mensagens flash.
+condicional para cursos pagos: `app/static/js/main.js` cuida das confirmações de
+ações, das máscaras de CPF/telefone e do fechamento automático de mensagens
+flash. Veja [Interface](INTERFACE.md) para os detalhes da camada visual.
 
 ### 8.2 `TurmaForm`
 
@@ -459,7 +464,7 @@ python -m pytest -q
 Resultado da última execução:
 
 ```text
-88 passed
+103 passed
 ```
 
 ## 13. Como executar o projeto

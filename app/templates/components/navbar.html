@@ -1,24 +1,41 @@
-<header class="site-header">
-  <div class="container nav">
-    <a class="brand" href="{{ url_for('main.index') }}">SENAC Sobral</a>
+{% set endpoint_atual = request.endpoint or '' %}
 
-    <nav class="nav-links" aria-label="Navegação principal">
-      <a href="{{ url_for('catalogo.listar') }}">Cursos gratuitos</a>
+<header class="navbar navbar-expand-lg navbar-dark public-header">
+  <div class="container-xl">
+    <a class="navbar-brand public-brand" href="{{ url_for('main.index') }}"{% if endpoint_atual == 'main.index' %} aria-current="page"{% endif %}>
+      <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+      SENAC <span>Sobral</span>
+    </a>
 
-      {% if not current_user.is_authenticated and request.endpoint != 'auth.login' %}
-        <a href="{{ config.PORTAL_CURSOS_URL }}" target="_blank" rel="noopener noreferrer">
-          Outros cursos no SENAC
-        </a>
-      {% endif %}
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navegacao-publica"
+      aria-controls="navegacao-publica"
+      aria-expanded="false"
+      aria-label="Abrir navegação"
+    >
+      <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
 
-      {% if current_user.is_authenticated %}
-        <a href="{{ url_for('admin.dashboard') }}">Painel</a>
-        <a href="{{ url_for('admin.inscricoes') }}">Inscrições</a>
-        <form method="post" action="{{ url_for('auth.logout') }}" class="inline-form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="link-button">Sair</button>
-        </form>
-      {% endif %}
+    <nav class="collapse navbar-collapse" id="navegacao-publica" aria-label="Navegação principal">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+        <li class="nav-item">
+          <a class="nav-link{% if endpoint_atual in ['catalogo.listar', 'catalogo.detalhe', 'inscricoes.pre_inscricao', 'inscricoes.confirmacao'] %} active{% endif %}" href="{{ url_for('catalogo.listar') }}"{% if endpoint_atual in ['catalogo.listar', 'catalogo.detalhe', 'inscricoes.pre_inscricao', 'inscricoes.confirmacao'] %} aria-current="page"{% endif %}>
+            Cursos gratuitos
+          </a>
+        </li>
+
+        {% if not current_user.is_authenticated and endpoint_atual != 'auth.login' %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ config.PORTAL_CURSOS_URL }}" target="_blank" rel="noopener noreferrer">
+              Outros cursos no SENAC
+              <i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i>
+            </a>
+          </li>
+        {% endif %}
+      </ul>
     </nav>
   </div>
 </header>

@@ -97,7 +97,8 @@ class Inscricao(TimestampMixin, db.Model):
     def protocolo(self) -> str:
         """Código legível exibido ao candidato e ao administrador."""
         ano = self.criado_em.year if self.criado_em else date.today().year
-        return f"INS-{ano}-{self.id:05d}"
+        identificador = self.id or 0
+        return f"INS-{ano}-{identificador:05d}"
 
     @property
     def situacao(self) -> str:

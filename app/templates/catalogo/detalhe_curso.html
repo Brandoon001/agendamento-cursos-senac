@@ -1,50 +1,48 @@
 {% extends "base.html" %}
+{% from "components/ui.html" import breadcrumb, status_badge, empty_state %}
 
 {% block title %}{{ curso.titulo }} | SENAC Cursos{% endblock %}
 
 {% block content %}
-  <p class="breadcrumb">
-    <a href="{{ url_for('catalogo.listar') }}">Cursos</a>
-    <span aria-hidden="true">/</span>
-    <span>{{ curso.titulo }}</span>
-  </p>
+  {{ breadcrumb([
+    {'label': 'Cursos', 'url': url_for('catalogo.listar')},
+    {'label': curso.titulo}
+  ]) }}
 
   <section class="course-detail">
     <div class="course-detail__main">
-      <span class="badge badge--gratuito">
-        Gratuito &middot; {{ curso.cidade }}
-      </span>
+      {{ status_badge('gratuito', 'Gratuito · ' ~ curso.cidade) }}
       <h1>{{ curso.titulo }}</h1>
       <p class="course-detail__description">{{ curso.descricao }}</p>
 
       <dl class="detail-list">
         <div>
-          <dt>Carga horária</dt>
+          <dt><i class="bi bi-clock" aria-hidden="true"></i> Carga horária</dt>
           <dd>{{ curso.carga_horaria ~ " horas" if curso.carga_horaria else "A definir" }}</dd>
         </div>
         <div>
-          <dt>Início</dt>
+          <dt><i class="bi bi-calendar-event" aria-hidden="true"></i> Início</dt>
           <dd>{{ curso.data_inicio.strftime("%d/%m/%Y") if curso.data_inicio else "A definir" }}</dd>
         </div>
         <div>
-          <dt>Término</dt>
+          <dt><i class="bi bi-calendar-check" aria-hidden="true"></i> Término</dt>
           <dd>{{ curso.data_fim.strftime("%d/%m/%Y") if curso.data_fim else "A definir" }}</dd>
         </div>
       </dl>
     </div>
 
     <aside class="course-detail__aside">
-      <h2>Pré-inscrição gratuita</h2>
-      <p>
+      <h2><i class="bi bi-pencil-square" aria-hidden="true"></i> Pré-inscrição gratuita</h2>
+      <p class="text-muted">
         Faça sua pré-inscrição e aguarde o contato da equipe do SENAC para
         confirmar sua vaga.
       </p>
       {% if curso.aceita_pre_inscricao and curso.possui_vagas %}
-        <a class="button" href="{{ url_for('inscricoes.pre_inscricao', curso_id=curso.id) }}">
+        <a class="btn btn-primary w-100" href="{{ url_for('inscricoes.pre_inscricao', curso_id=curso.id) }}">
           Fazer pré-inscrição
         </a>
       {% else %}
-        <p class="notice notice--warning">Não há vagas disponíveis no momento.</p>
+        <p class="notice notice--warning mb-0">Não há vagas disponíveis no momento.</p>
       {% endif %}
     </aside>
   </section>
@@ -57,11 +55,15 @@
       </div>
     </div>
 
-      {% if turmas %}
-        <div class="turma-grid">
-          {% for turma in turmas %}
-            <article class="card turma-card{% if not turma.disponivel %} turma-card--unavailable{% endif %}">
-              <h3>{{ turma.nome }}</h3>
+    {% if turmas %}
+      <div class="turma-grid">
+        {% for turma in turmas %}
+          <article class="card turma-card{% if not turma.disponivel %} turma-card--unavailable{% endif %}">
+            <div class="card-body">
+              <h3 class="h5">
+                <i class="bi bi-calendar-week" aria-hidden="true"></i>
+                {{ turma.nome }}
+              </h3>
               <ul class="turma-meta">
                 <li><strong>Dias:</strong> {{ turma.dias_semana or "A definir" }}</li>
                 <li><strong>Horário:</strong> {{ turma.horario_formatado }}</li>
@@ -83,27 +85,24 @@
               </ul>
 
               {% if turma.disponivel %}
-                <a class="button button--small" href="{{ url_for('inscricoes.pre_inscricao', curso_id=curso.id, turma_id=turma.id) }}">
+                <a class="btn btn-sm btn-primary w-100" href="{{ url_for('inscricoes.pre_inscricao', curso_id=curso.id, turma_id=turma.id) }}">
                   Pré-inscrição nesta turma
                 </a>
               {% else %}
-                <span class="badge badge--encerrado">Vagas esgotadas</span>
+                <span class="status-badge status-badge--encerrado">Vagas esgotadas</span>
               {% endif %}
-            </article>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="placeholder">
-          <h2>Turmas a definir</h2>
-          {% if curso.aceita_pre_inscricao and curso.possui_vagas %}
-            <p>
-              Este curso ainda não possui turmas publicadas. Faça a
-              pré-inscrição e a equipe informará os próximos horários.
-            </p>
-          {% else %}
-            <p>Este curso ainda não possui turmas publicadas.</p>
-          {% endif %}
-        </div>
-      {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      {% call empty_state("Turmas a definir", "Este curso ainda não possui turmas publicadas.", "calendar") %}
+        {% if curso.aceita_pre_inscricao and curso.possui_vagas %}
+          <p class="text-muted">
+            Faça a pré-inscrição e a equipe informará os próximos horários.
+          </p>
+        {% endif %}
+      {% endcall %}
+    {% endif %}
   </section>
 {% endblock %}

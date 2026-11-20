@@ -17,7 +17,7 @@ from app.blueprints.inscricoes import bp
 from app.extensions import db
 from app.forms.inscricao import InscricaoForm, formatar_cpf
 from app.models import Inscricao, Turma
-from app.services.curso_service import CursoService
+from app.services.curso_service import CursoService, curso_esta_visivel
 from app.services.inscricao_service import InscricaoService
 
 
@@ -25,7 +25,7 @@ from app.services.inscricao_service import InscricaoService
 def pre_inscricao(curso_id: int):
     """Exibe e processa o formulário de pré-inscrição do curso gratuito."""
     curso = CursoService().obter_curso(curso_id)
-    if curso is None or not curso.aceita_pre_inscricao:
+    if not curso_esta_visivel(curso):
         abort(404)
 
     turma_id = _turma_id_da_requisicao()
@@ -59,7 +59,7 @@ def pre_inscricao(curso_id: int):
         except ValueError as erro:
             flash(str(erro), "error")
         else:
-            session["ultima_inscricao_id"] = inscricao.id
+            _registrar_inscricao_na_sessao(inscricao.id)
             flash("Pré-inscrição registrada com sucesso!", "success")
             return redirect(
                 url_for("inscricoes.confirmacao", inscricao_id=inscricao.id)
@@ -81,7 +81,7 @@ def confirmacao(inscricao_id: int):
         abort(404)
     if (
         not current_user.is_authenticated
-        and session.get("ultima_inscricao_id") != inscricao.id
+        and inscricao.id not in session.get("inscricoes_ids", [])
     ):
         abort(404)
 
@@ -89,6 +89,14 @@ def confirmacao(inscricao_id: int):
         "inscricoes/confirmacao.html",
         inscricao=inscricao,
     )
+
+
+def _registrar_inscricao_na_sessao(inscricao_id: int) -> None:
+    identificadores = list(session.get("inscricoes_ids", []))
+    if inscricao_id not in identificadores:
+        identificadores.append(inscricao_id)
+    session["inscricoes_ids"] = identificadores[-10:]
+    session["ultima_inscricao_id"] = inscricao_id
 
 
 def _turma_id_da_requisicao() -> int | None:

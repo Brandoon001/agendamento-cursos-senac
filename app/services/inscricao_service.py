@@ -86,8 +86,9 @@ class InscricaoService:
             consulta = consulta.where(Inscricao.curso_id == curso_id)
         if status:
             status_enum = self._converter_status(status)
-            if status_enum is not None:
-                consulta = consulta.where(Inscricao.status == status_enum)
+            if status_enum is None:
+                return []
+            consulta = consulta.where(Inscricao.status == status_enum)
         if termo:
             padrao = f"%{termo.strip().replace('%', '\\%').replace('_', '\\_')}%"
             consulta = consulta.where(
@@ -121,21 +122,30 @@ class InscricaoService:
 
         inscricao.status = status_enum
         inscricao.administrador_id = administrador_id
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
         return inscricao
 
     def contar_por_status(self) -> dict[StatusInscricao, int]:
-        """Quantidade de inscrições em cada situação."""
+        """Quantidade de inscrições em cada situação, incluindo as vazias."""
+        contadores = {status: 0 for status in StatusInscricao}
         linhas = db.session.execute(
             db.select(Inscricao.status, db.func.count()).group_by(Inscricao.status)
         ).all()
-        return {status: total for status, total in linhas}
+        contadores.update({status: total for status, total in linhas})
+        return contadores
 
     def _cpf_ja_inscrito(self, digitos_cpf: str) -> bool:
-        cpfs = db.session.scalars(db.select(Inscricao.cpf)).all()
-        return any(
-            somente_digitos(str(cpf or "")) == digitos_cpf for cpf in cpfs
-        )
+        cpf_formatado = formatar_cpf(digitos_cpf)
+        return (
+            db.session.scalar(
+                db.select(db.func.count()).where(Inscricao.cpf == cpf_formatado)
+            )
+            or 0
+        ) > 0
 
     @staticmethod
     def _converter_status(status: StatusInscricao | str) -> StatusInscricao | None:

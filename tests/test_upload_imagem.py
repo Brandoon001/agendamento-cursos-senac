@@ -131,7 +131,7 @@ def test_limpar_campo_de_imagem_remove_arquivo_local(client_autenticado, uploads
     )
 
     assert resposta.status_code == 302
-    assert curso.imagem_url == ""
+    assert curso.imagem_url is None
     assert not (uploads / "antigo.png").exists()
 
 

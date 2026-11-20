@@ -12,6 +12,14 @@ completa: catálogo filtrado por cidade, turmas, controle de vagas,
 pré-inscrição, autenticação, painel administrativo e exportação das inscrições
 em planilha Excel.
 
+## Documentação
+
+A documentação detalhada de todas as áreas está em [`docs/`](docs/INDICE.md):
+arquitetura, configuração, banco, modelos, serviços, formulários, fluxos, rotas,
+painel, interface, segurança, testes, CLI e manutenção. O documento
+[`docs/MODULO_CURSOS.md`](docs/MODULO_CURSOS.md) mantém o material de estudo
+original do módulo de cursos.
+
 ## Escopo atual
 
 Já implementado:
@@ -32,12 +40,13 @@ Já implementado:
 - formulário público de pré-inscrição com validação de CPF, turma, vagas e aceite
   de tratamento de dados;
 - página de confirmação com protocolo;
-- login e logout do administrador, com limite de tentativas via hash de senha e
+- login e logout do administrador com hash de senha, sessão protegida e
   proteção contra redirecionamento externo;
 - listagem, filtros e alteração de situação das inscrições no painel;
-- exportação das inscrições filtradas para `.xlsx` (`openpyxl`);
+- exportação das inscrições filtradas para `.xlsx` (`openpyxl`), com valores
+  textuais protegidos contra injeção de fórmulas;
 - comando `seed-demo` com dados fictícios para demonstração;
-- 87 testes automatizados cobrindo todos os módulos.
+- 103 testes automatizados cobrindo todos os módulos.
 
 ## Requisitos
 
@@ -85,7 +94,6 @@ Já implementado:
 │       ├── auth/
 │       ├── admin/
 │       └── errors/
-├── legacy/                      # Scripts antigos, fora da aplicação Flask
 ├── migrations/                  # Migrações do banco
 ├── instance/                    # Banco SQLite e arquivos locais
 ├── tests/
@@ -95,9 +103,6 @@ Já implementado:
 ├── run.py
 └── wsgi.py
 ```
-
-A pasta `legacy/` preserva os scripts de coleta anteriores. Ela não é importada
-pela aplicação, não faz parte da fundação e pode ser removida se não for útil.
 
 ## Instalação
 
@@ -411,7 +416,7 @@ remove a coluna `cidade`. Os cursos pagos excluídos pela migração
 
 ## Regras para integração
 
-- Não importe nada da pasta `legacy/` nem de repositórios externos.
+- Os dados do catálogo são gerenciados apenas pelo painel administrativo.
 - Não crie um segundo administrador; o comando CLI já impõe essa regra.
 - Todos os cursos são gratuitos e pertencem a uma cidade; o catálogo público
   mostra apenas os cursos de `CIDADE_PADRAO` (Sobral).

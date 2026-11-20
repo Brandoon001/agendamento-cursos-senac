@@ -1,0 +1,68 @@
+{% set endpoint_atual = request.endpoint or '' %}
+{% set rota_cursos = endpoint_atual in ['admin.cursos', 'admin.novo_curso', 'admin.editar_curso', 'admin.turmas_do_curso', 'admin.nova_turma', 'admin.editar_turma'] %}
+{% set rota_inscricoes = endpoint_atual in ['admin.inscricoes', 'admin.alterar_status_inscricao', 'admin.exportar_inscricoes'] %}
+
+<header class="navbar navbar-expand-md navbar-light d-print-none admin-topbar">
+  <div class="container-xl">
+    <button
+      class="navbar-toggler d-lg-none"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#sidebar-menu"
+      aria-controls="sidebar-menu"
+      aria-expanded="false"
+      aria-label="Alternar menu administrativo"
+    >
+      <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+
+    <a class="navbar-brand admin-brand" href="{{ url_for('admin.dashboard') }}">
+      <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+      SENAC <span>Sobral</span>
+    </a>
+
+    <div class="navbar-nav flex-row ms-auto align-items-center gap-2">
+      <a class="nav-item nav-link d-none d-md-inline-flex align-items-center gap-1" href="{{ url_for('main.index') }}">
+        <i class="bi bi-globe" aria-hidden="true"></i>
+        Ver site
+      </a>
+      <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+          Sair
+        </button>
+      </form>
+    </div>
+  </div>
+</header>
+
+<div class="navbar-expand-md">
+  <div class="collapse navbar-collapse" id="sidebar-menu">
+    <aside class="navbar-nav admin-sidebar" aria-label="Menu administrativo">
+      <p class="nav-label">Gestão</p>
+
+      <a class="nav-link{% if endpoint_atual == 'admin.dashboard' %} active{% endif %}" href="{{ url_for('admin.dashboard') }}"{% if endpoint_atual == 'admin.dashboard' %} aria-current="page"{% endif %}>
+        <i class="bi bi-speedometer2" aria-hidden="true"></i>
+        <span>Painel</span>
+      </a>
+
+      <a class="nav-link{% if rota_cursos %} active{% endif %}" href="{{ url_for('admin.cursos') }}"{% if rota_cursos %} aria-current="page"{% endif %}>
+        <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
+        <span>Cursos e turmas</span>
+      </a>
+
+      <a class="nav-link{% if rota_inscricoes %} active{% endif %}" href="{{ url_for('admin.inscricoes') }}"{% if rota_inscricoes %} aria-current="page"{% endif %}>
+        <i class="bi bi-person-check" aria-hidden="true"></i>
+        <span>Inscrições</span>
+      </a>
+
+      <p class="nav-label mt-3">Ações rápidas</p>
+
+      <a class="nav-link" href="{{ url_for('admin.novo_curso') }}">
+        <i class="bi bi-plus-circle" aria-hidden="true"></i>
+        <span>Novo curso</span>
+      </a>
+    </aside>
+  </div>
+</div>

@@ -1,37 +1,44 @@
 {% extends "base.html" %}
+{% from "components/ui.html" import field %}
 
 {% block title %}Acesso administrativo | SENAC Cursos{% endblock %}
 
 {% block content %}
-  <section class="auth-card">
-    <p class="eyebrow">Área restrita</p>
-    <h1>Acesso administrativo</h1>
-    <p class="muted">Informe suas credenciais para gerenciar cursos, turmas e inscrições.</p>
-
-    <form
-      method="post"
-      class="form"
-      novalidate
-      action="{{ url_for('auth.login', next=proximo) if proximo else url_for('auth.login') }}"
-    >
-      {{ formulario.hidden_tag() }}
-
-      <div class="field">
-        {{ formulario.email.label }} *
-        {{ formulario.email(autocomplete="username", placeholder="admin@senac.br") }}
-        {% for erro in formulario.email.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
+  <section class="auth-card card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5">
+      <div class="text-center mb-4">
+        <span class="stat-card__icon mx-auto mb-3" style="width: 3.5rem; height: 3.5rem; font-size: 1.6rem;" aria-hidden="true">
+          <i class="bi bi-shield-lock"></i>
+        </span>
+        <p class="eyebrow">Área restrita</p>
+        <h1>Acesso administrativo</h1>
+        <p class="text-muted mb-0">Informe suas credenciais para gerenciar cursos, turmas e inscrições.</p>
       </div>
 
-      <div class="field">
-        {{ formulario.senha.label }} *
-        {{ formulario.senha(autocomplete="current-password") }}
-        {% for erro in formulario.senha.errors %}<span class="field-error">{{ erro }}</span>{% endfor %}
-      </div>
+      <form
+        method="post"
+        novalidate
+        action="{{ url_for('auth.login', next=proximo) if proximo else url_for('auth.login') }}"
+      >
+        {{ formulario.hidden_tag() }}
 
-      <div class="form-actions">
-        <button type="submit" class="button">Entrar</button>
-        <a class="button button--secondary" href="{{ url_for('main.index') }}">Voltar ao início</a>
-      </div>
-    </form>
+        {{ field(formulario.email, atributos={'autocomplete': 'username', 'placeholder': 'admin@senac.br'}) }}
+        {{ field(formulario.senha, atributos={'autocomplete': 'current-password'}) }}
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+            Entrar
+          </button>
+        </div>
+
+        <div class="text-center mt-3">
+          <a class="small" href="{{ url_for('main.index') }}">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            Voltar ao início
+          </a>
+        </div>
+      </form>
+    </div>
   </section>
 {% endblock %}
