@@ -138,10 +138,12 @@ Variáveis em `:root`:
 
 | Variável | Valor |
 | --- | --- |
-| `--senac-blue` | `#004b8d` |
-| `--senac-blue-dark` | `#00325e` |
-| `--senac-blue-soft` | `#e8f1fb` |
-| `--senac-accent` | `#f28c28` |
+| `--senac-blue` | `#004a8d` |
+| `--senac-blue-dark` | `#003b71` |
+| `--senac-blue-soft` | `#e6f0f8` |
+| `--senac-accent` | `#f7941d` |
+| `--senac-accent-light` | `#fdc180` |
+| `--senac-accent-dark` | `#d97e13` |
 | `--senac-text` | `#1f2933` |
 | `--senac-muted` | `#52606d` |
 | `--senac-border` | `#d9e2ec` |

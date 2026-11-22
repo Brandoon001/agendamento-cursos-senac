@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showCancelButton: true,
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
-        confirmButtonColor: "#004b8d",
+        confirmButtonColor: "#004a8d",
         cancelButtonColor: "#6c757d",
         reverseButtons: true,
         focusCancel: true,
