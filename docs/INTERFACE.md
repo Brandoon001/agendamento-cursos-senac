@@ -130,27 +130,36 @@ Macro `curso_card(curso)` com imagem ou placeholder, badge `Gratuito · <cidade>
 
 ## CSS
 
-Arquivo: `app/static/css/style.css` (921 linhas).
+Arquivo: `app/static/css/style.css` (1127 linhas), organizado em seções identificadas por comentários.
 
 ### Tokens
 
-Variáveis em `:root`:
+Variáveis em `:root`, com o azul institucional do SENAC e amarelo como destaque:
 
 | Variável | Valor |
 | --- | --- |
 | `--senac-blue` | `#004a8d` |
 | `--senac-blue-dark` | `#003b71` |
 | `--senac-blue-soft` | `#e6f0f8` |
-| `--senac-accent` | `#f7941d` |
-| `--senac-accent-light` | `#fdc180` |
-| `--senac-accent-dark` | `#d97e13` |
-| `--senac-text` | `#1f2933` |
-| `--senac-muted` | `#52606d` |
-| `--senac-border` | `#d9e2ec` |
+| `--senac-blue-rgb` | `0, 74, 141` |
+| `--senac-accent` | `#ffb822` |
+| `--senac-accent-light` | `#ffe08a` |
+| `--senac-accent-dark` | `#f19300` |
+| `--senac-accent-ink` | `#8a5000` |
+| `--senac-secondary` | `#3182a7` |
+| `--senac-text` | `#333539` |
+| `--senac-muted` | `#686a6c` |
+| `--senac-border` | `#e4e7eb` |
+| `--senac-surface` | `#f8f8f8` |
+| `--senac-success` / `--senac-success-soft` | `#15734e` / `#e6f4ea` |
+| `--senac-danger` / `--senac-danger-soft` | `#b42318` / `#fdecec` |
+| `--senac-warning` / `--senac-warning-soft` | `#8a5000` / `#fff4e0` |
+| `--senac-info` / `--senac-info-soft` | `#003b71` / `#e6f0f8` |
+| `--senac-contact` / `--senac-contact-soft` | `#1d5f7d` / `#e4f1f6` |
 | `--senac-radius` | `14px` |
 | `--senac-shadow` | sombra suave |
 
-As variáveis também sobrescrevem `--bs-primary` e `--tblr-primary` para manter a identidade SENAC sem duplicar CSS.
+As variáveis também sobrescrevem `--bs-primary` e `--tblr-primary` para manter a identidade sem duplicar CSS. O amarelo é usado em CTA, eyebrow, ícones, borda do rodapé, protocolo e badges de atenção; o azul participa de header, hero, links, botões primários e tabelas.
 
 ### Blocos visuais
 
@@ -172,8 +181,8 @@ As variáveis também sobrescrevem `--bs-primary` e `--tblr-primary` para manter
 | `status-badge--gratuito`, `--ativo`, `--ativa`, `--finalizada` | verde |
 | `status-badge--inativo`, `--inativa`, `--encerrado`, `--cancelada` | vermelho |
 | `status-badge--recebida`, `--warning` | âmbar |
-| `status-badge--em_analise` | azul |
-| `status-badge--contatada` | roxo |
+| `status-badge--em_analise` | azul (`--senac-info`) |
+| `status-badge--contatada` | azul secundário (`--senac-contact`) |
 
 ### Responsividade
 
@@ -223,9 +232,11 @@ A confirmação usa `form.dataset.confirmed` e `requestSubmit()` para evitar loo
 
 1. Ajuste os tokens em `:root`.
 2. Atualize `--bs-primary-rgb` se a cor primária mudar.
-3. Revise `.public-header`, `.admin-sidebar` e `.status-badge`.
+3. Revise `.public-header`, `.senac-hero`, `.site-footer` e `.status-badge`.
 4. Atualize `<meta name="theme-color">` nos layouts.
-5. Execute testes e smoke de CDNs/HTML.
+5. Replique a cor primária em `static/js/main.js` (SweetAlert2), `admin/dashboard.html` (Chart.js) e `services/exportacao_service.py` (XLSX).
+6. Atualize as asserções de cor em `tests/test_admin_ui.py`.
+7. Execute testes e smoke de CDNs/HTML.
 
 ## Leitura complementar
 

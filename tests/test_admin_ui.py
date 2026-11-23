@@ -42,6 +42,10 @@ def test_sidebar_admin_mantem_atalhos_em_layout_vertical():
     ).read_text(encoding="utf-8")
 
     assert ".navbar-nav.admin-sidebar {\n  flex-direction: column;\n}" in css
+    assert (
+        ".admin-sidebar .navbar-collapse {\n  flex-direction: column;\n  align-items: stretch;\n}"
+        in css
+    )
 
 
 def test_sidebar_admin_fica_ao_lado_do_conteudo(client_autenticado):
@@ -60,24 +64,34 @@ def test_sidebar_admin_fica_ao_lado_do_conteudo(client_autenticado):
     assert "height: 100dvh;" in css
 
 
-def test_acoes_rapidas_ficam_fora_do_menu_colapsavel(client_autenticado):
+def test_acoes_rapidas_ficam_dentro_do_menu_colapsavel(client_autenticado):
     html = client_autenticado.get("/admin/").get_data(as_text=True)
     menu = html.split('id="sidebar-menu"', 1)[1].split("</div>", 1)[0]
 
-    assert "Ações rápidas" not in menu
-    assert "Ações rápidas" in html
+    assert "Ações rápidas" in menu
+    assert "<span>Novo curso</span>" in menu
+    assert html.index("Ações rápidas") < html.index("<span>Painel</span>")
     assert "Gestão" not in html
     assert 'content="#004a8d"' in html
 
 
-def test_paleta_usa_cores_oficiais_do_senac():
+def test_novo_curso_tem_estado_ativo_na_sidebar(client_autenticado):
+    html = client_autenticado.get("/admin/cursos/novo").get_data(as_text=True)
+    antes, depois = html.split('href="/admin/cursos/novo"', 1)
+    link = antes.rsplit("<a ", 1)[-1] + 'href="/admin/cursos/novo"' + depois.split(">", 1)[0]
+
+    assert "active" in link
+    assert 'aria-current="page"' in link
+
+
+def test_paleta_usa_azul_institucional_e_amarelo():
     css = (
         Path(__file__).resolve().parents[1] / "app/static/css/style.css"
     ).read_text(encoding="utf-8")
 
     assert "--senac-blue: #004a8d;" in css
-    assert "--senac-accent: #f7941d;" in css
-    assert "--senac-accent-light: #fdc180;" in css
+    assert "--senac-accent: #ffb822;" in css
+    assert "--senac-accent-dark: #f19300;" in css
     assert "--bs-primary-rgb: 0, 74, 141;" in css
 
 

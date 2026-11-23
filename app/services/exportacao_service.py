@@ -38,7 +38,7 @@ def gerar_planilha_inscricoes(inscricoes: Iterable[Inscricao]) -> bytes:
 
     for celula in aba[1]:
         celula.font = Font(bold=True, color="FFFFFF")
-        celula.fill = PatternFill(fill_type="solid", fgColor="004B8D")
+        celula.fill = PatternFill(fill_type="solid", fgColor="004A8D")
         celula.alignment = Alignment(vertical="center")
 
     for inscricao in inscricoes:

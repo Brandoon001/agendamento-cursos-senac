@@ -1,3 +1,4 @@
+{# Mensagens flash por categoria: success, danger, warning e info. #}
 {% with mensagens = get_flashed_messages(with_categories=true) %}
   {% if mensagens %}
     <div class="flash-stack" aria-live="polite" aria-atomic="false">

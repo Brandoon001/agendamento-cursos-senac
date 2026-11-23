@@ -31,12 +31,14 @@ from app.services.inscricao_service import InscricaoService
 from app.services.upload_imagem_service import UploadImagemService
 
 
+# Segurança: exige login em todas as rotas do painel.
 @bp.before_request
 @login_required
 def exigir_autenticacao():
     """Protege todas as rotas administrativas."""
 
 
+# Painel: indicadores gerais e atalhos.
 @bp.get("/")
 def dashboard():
     """Painel inicial com indicadores do módulo de cursos."""
@@ -63,6 +65,7 @@ def dashboard():
     )
 
 
+# Inscrições: listagem, alteração de situação e exportação.
 @bp.get("/inscricoes")
 def inscricoes():
     """Lista e filtra as pré-inscrições recebidas."""
@@ -122,6 +125,7 @@ def exportar_inscricoes():
     )
 
 
+# Cursos: listagem, cadastro, edição e ativação.
 @bp.get("/cursos")
 def cursos():
     """Lista administrativa de cursos, incluindo inativos."""
@@ -241,6 +245,7 @@ def excluir_curso(curso_id: int):
     return redirect(url_for("admin.cursos"))
 
 
+# Turmas: gestão de horários e vagas de cada curso.
 @bp.get("/cursos/<int:curso_id>/turmas")
 def turmas_do_curso(curso_id: int):
     """Gerencia as turmas e horários de um curso."""
@@ -376,6 +381,7 @@ def excluir_turma(turma_id: int):
     )
 
 
+# Auxiliares: persistência, filtros e redirecionamentos internos.
 def _salvar_curso(
     formulario: CursoForm,
     servico: CursoService,

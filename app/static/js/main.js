@@ -1,14 +1,18 @@
+// Comportamentos compartilhados pelas páginas públicas e administrativas.
 document.addEventListener("DOMContentLoaded", () => {
+  // Fecha a mensagem flash ao clicar no botão data-dismiss.
   document.querySelectorAll("[data-dismiss]").forEach((button) => {
     button.addEventListener("click", () => {
       button.closest(".flash")?.remove();
     });
   });
 
+  // Remove automaticamente mensagens de sucesso após 7 segundos.
   document.querySelectorAll(".flash--success").forEach((flash) => {
     window.setTimeout(() => flash.remove(), 7000);
   });
 
+  // Confirma ações marcadas em data-confirm; usa SweetAlert2 com fallback para window.confirm.
   document.querySelectorAll("form[data-confirm]").forEach((form) => {
     form.addEventListener("submit", (event) => {
       if (form.dataset.confirmed === "true") return;
@@ -38,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
         confirmButtonColor: "#004a8d",
-        cancelButtonColor: "#6c757d",
+        cancelButtonColor: "#686a6c",
         reverseButtons: true,
         focusCancel: true,
       }).then((resultado) => {
@@ -47,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Máscaras de CPF e telefone aplicadas enquanto o usuário digita.
   const somenteDigitos = (valor) => valor.replace(/\D/g, "");
 
   const formatarCpf = (valor) =>
@@ -68,12 +73,14 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/(\d{4})(\d)/, "$1-$2");
   };
 
+  // CPF: 000.000.000-00.
   document.querySelectorAll("input[data-mask='cpf']").forEach((input) => {
     input.addEventListener("input", () => {
       input.value = formatarCpf(input.value);
     });
   });
 
+  // Telefone: (00) 0000-0000 ou (00) 00000-0000.
   document.querySelectorAll("input[data-mask='telefone']").forEach((input) => {
     input.addEventListener("input", () => {
       input.value = formatarTelefone(input.value);

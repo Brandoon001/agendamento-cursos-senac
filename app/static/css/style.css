@@ -1,15 +1,32 @@
+/* --------------------------------------------------------------------------
+   Tokens de identidade visual: azul SENAC, amarelo de destaque e neutros
+   -------------------------------------------------------------------------- */
 :root {
   --senac-blue: #004a8d;
   --senac-blue-dark: #003b71;
   --senac-blue-soft: #e6f0f8;
-  --senac-accent: #f7941d;
-  --senac-accent-light: #fdc180;
-  --senac-accent-dark: #d97e13;
-  --senac-text: #1f2933;
-  --senac-muted: #52606d;
-  --senac-border: #d9e2ec;
+  --senac-blue-rgb: 0, 74, 141;
+  --senac-accent: #ffb822;
+  --senac-accent-light: #ffe08a;
+  --senac-accent-dark: #f19300;
+  --senac-accent-ink: #8a5000;
+  --senac-secondary: #3182a7;
+  --senac-text: #333539;
+  --senac-muted: #686a6c;
+  --senac-border: #e4e7eb;
+  --senac-surface: #f8f8f8;
+  --senac-success: #15734e;
+  --senac-success-soft: #e6f4ea;
+  --senac-danger: #b42318;
+  --senac-danger-soft: #fdecec;
+  --senac-warning: var(--senac-accent-ink);
+  --senac-warning-soft: #fff4e0;
+  --senac-info: var(--senac-blue-dark);
+  --senac-info-soft: var(--senac-blue-soft);
+  --senac-contact: #1d5f7d;
+  --senac-contact-soft: #e4f1f6;
   --senac-radius: 14px;
-  --senac-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --senac-shadow: 0 12px 30px rgba(0, 74, 141, 0.08);
   --bs-primary: var(--senac-blue);
   --bs-primary-rgb: 0, 74, 141;
   --tblr-primary: var(--senac-blue);
@@ -20,6 +37,9 @@
   box-sizing: border-box;
 }
 
+/* --------------------------------------------------------------------------
+   Base, links, foco e link de pulo (acessibilidade)
+   -------------------------------------------------------------------------- */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 1.5rem;
@@ -27,7 +47,7 @@ html {
 
 body {
   color: var(--senac-text);
-  background: #f5f7fa;
+  background: var(--senac-surface);
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
 }
@@ -43,7 +63,7 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 3px solid rgba(0, 74, 141, 0.35);
+  outline: 3px solid rgba(var(--senac-blue-rgb), 0.35);
   outline-offset: 2px;
 }
 
@@ -63,6 +83,9 @@ a:hover {
   top: 1rem;
 }
 
+/* --------------------------------------------------------------------------
+   Botões: primário, contorno e botão de destaque amarelo
+   -------------------------------------------------------------------------- */
 .btn-primary {
   --bs-btn-bg: var(--senac-blue);
   --bs-btn-border-color: var(--senac-blue);
@@ -84,17 +107,20 @@ a:hover {
 }
 
 .btn-accent {
-  --bs-btn-color: #1f2933;
+  --bs-btn-color: var(--senac-text);
   --bs-btn-bg: var(--senac-accent);
   --bs-btn-border-color: var(--senac-accent);
-  --bs-btn-hover-color: #1f2933;
+  --bs-btn-hover-color: var(--senac-text);
   --bs-btn-hover-bg: var(--senac-accent-dark);
   --bs-btn-hover-border-color: var(--senac-accent-dark);
 }
 
+/* --------------------------------------------------------------------------
+   Cabeçalho público: marca, busca e navegação
+   -------------------------------------------------------------------------- */
 .public-header {
-  background: linear-gradient(120deg, var(--senac-blue) 0%, var(--senac-blue-dark) 100%);
-  box-shadow: 0 4px 18px rgba(0, 74, 141, 0.18);
+  background: var(--senac-blue);
+  box-shadow: 0 4px 18px rgba(var(--senac-blue-rgb), 0.18);
 }
 
 .public-brand,
@@ -112,15 +138,30 @@ a:hover {
   font-weight: 500;
 }
 
+.public-header .navbar-brand.public-brand,
+.public-header .navbar-brand.public-brand:hover,
+.public-header .navbar-brand.public-brand:focus {
+  color: var(--senac-accent-light);
+}
+
+.public-header .navbar-brand.public-brand span {
+  color: var(--senac-accent-light);
+  opacity: 1;
+}
+
+.public-header .navbar-brand.public-brand .bi-mortarboard-fill {
+  color: #fff;
+}
+
 .public-header .nav-link {
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--senac-accent-light);
   font-weight: 500;
 }
 
 .public-header .nav-link:hover,
 .public-header .nav-link.active,
 .public-header .nav-link[aria-current="page"] {
-  color: #fff;
+  color: var(--senac-accent-light);
 }
 
 .public-header .nav-link.active::after {
@@ -136,20 +177,26 @@ a:hover {
   min-height: calc(100vh - 180px);
 }
 
+/* --------------------------------------------------------------------------
+   Rodapé do site
+   -------------------------------------------------------------------------- */
 .site-footer {
   padding: 1.5rem 0;
-  border-top: 1px solid var(--senac-border);
+  border-top: 4px solid var(--senac-accent);
   background: #fff;
   color: var(--senac-muted);
   font-size: 0.92rem;
 }
 
+/* --------------------------------------------------------------------------
+   Destaque da página inicial (hero) e títulos de seção
+   -------------------------------------------------------------------------- */
 .senac-hero {
   position: relative;
   overflow: hidden;
   padding: clamp(2rem, 5vw, 4.25rem);
   border-radius: 1.35rem;
-  background: linear-gradient(135deg, var(--senac-blue) 0%, var(--senac-blue-dark) 100%);
+  background: var(--senac-blue);
   color: #fff;
   box-shadow: var(--senac-shadow);
 }
@@ -161,7 +208,7 @@ a:hover {
   bottom: -9rem;
   width: 22rem;
   height: 22rem;
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 184, 34, 0.25);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -176,16 +223,17 @@ a:hover {
   font-size: clamp(2rem, 4.5vw, 3.4rem);
   font-weight: 700;
   line-height: 1.1;
+  color: var(--senac-accent-light)
 }
 
 .senac-hero p {
   max-width: 62ch;
-  color: #dbeafe;
+  color: var(--senac-blue-soft);
   font-size: 1.05rem;
 }
 
 .senac-hero .eyebrow {
-  color: var(--senac-accent-light);
+  color: var(--senac-accent);
 }
 
 .senac-hero .external-course-link {
@@ -201,7 +249,7 @@ a:hover {
 
 .eyebrow {
   margin: 0;
-  color: #b45309;
+  color: var(--senac-accent);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -227,6 +275,9 @@ a:hover {
   font-size: clamp(1.4rem, 2.5vw, 2rem);
 }
 
+/* --------------------------------------------------------------------------
+   Grade e cartões de cursos/turmas
+   -------------------------------------------------------------------------- */
 .course-grid,
 .turma-grid {
   display: grid;
@@ -245,7 +296,7 @@ a:hover {
 
 .course-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 18px 36px rgba(1, 6, 46, 0.12);
 }
 
 .course-card__image {
@@ -261,7 +312,7 @@ a:hover {
   color: #fff;
   font-size: 2.75rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--senac-blue) 0%, var(--senac-blue-dark) 100%);
+  background: var(--senac-blue);
 }
 
 .course-card .card-body {
@@ -313,6 +364,9 @@ a:hover {
   padding-top: 0.5rem;
 }
 
+/* --------------------------------------------------------------------------
+   Badges de status: verde (ativo), vermelho (inativo), âmbar e azuis
+   -------------------------------------------------------------------------- */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -329,34 +383,37 @@ a:hover {
 .status-badge--ativo,
 .status-badge--ativa,
 .status-badge--finalizada {
-  background: #e6f6ec;
-  color: #146c2e;
+  background: var(--senac-success-soft);
+  color: var(--senac-success);
 }
 
 .status-badge--inativo,
 .status-badge--inativa,
 .status-badge--encerrado,
 .status-badge--cancelada {
-  background: #fdecec;
-  color: #9b1c1c;
+  background: var(--senac-danger-soft);
+  color: var(--senac-danger);
 }
 
 .status-badge--recebida,
 .status-badge--warning {
-  background: #fff4e0;
-  color: #8a5000;
+  background: var(--senac-warning-soft);
+  color: var(--senac-warning);
 }
 
 .status-badge--em_analise {
-  background: #e9f0ff;
-  color: #1b4f9c;
+  background: var(--senac-info-soft);
+  color: var(--senac-info);
 }
 
 .status-badge--contatada {
-  background: #f3e9ff;
-  color: #63228c;
+  background: var(--senac-contact-soft);
+  color: var(--senac-contact);
 }
 
+/* --------------------------------------------------------------------------
+   Painel de filtros e contador de resultados
+   -------------------------------------------------------------------------- */
 .filter-panel {
   padding: 1.25rem;
   border: 1px solid var(--senac-border);
@@ -401,6 +458,9 @@ a:hover {
   font-size: 0.92rem;
 }
 
+/* --------------------------------------------------------------------------
+   Detalhe público do curso e metadados
+   -------------------------------------------------------------------------- */
 .course-detail {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
@@ -455,6 +515,9 @@ a:hover {
   font-weight: 600;
 }
 
+/* --------------------------------------------------------------------------
+   Cartões de turma e indicação de turma indisponível
+   -------------------------------------------------------------------------- */
 .turma-card {
   height: 100%;
   border: 1px solid var(--senac-border);
@@ -463,7 +526,7 @@ a:hover {
 }
 
 .turma-card--unavailable {
-  border-left: 4px solid #b54708;
+  border-left: 4px solid var(--senac-accent-dark);
 }
 
 .turma-card h3 {
@@ -480,6 +543,9 @@ a:hover {
   list-style: none;
 }
 
+/* --------------------------------------------------------------------------
+   Avisos informativos e de atenção
+   -------------------------------------------------------------------------- */
 .notice {
   margin-top: 1.5rem;
   padding: 1rem 1.15rem;
@@ -489,10 +555,13 @@ a:hover {
 }
 
 .notice--warning {
-  border-left-color: #b54708;
-  background: #fff4e0;
+  border-left-color: var(--senac-accent-dark);
+  background: var(--senac-warning-soft);
 }
 
+/* --------------------------------------------------------------------------
+   Login, comprovante de inscrição e estado vazio
+   -------------------------------------------------------------------------- */
 .auth-card,
 .comprovante,
 .empty-state {
@@ -516,7 +585,7 @@ a:hover {
   justify-content: space-between;
   gap: 1rem;
   padding: 1.25rem 1.5rem;
-  border: 2px dashed var(--senac-blue);
+  border: 2px dashed var(--senac-accent);
   border-radius: var(--senac-radius);
   background: var(--senac-blue-dark);
   color: #fff;
@@ -533,6 +602,9 @@ a:hover {
   letter-spacing: 0.05em;
 }
 
+/* --------------------------------------------------------------------------
+   Formulários: campos, seções, validação e ações
+   -------------------------------------------------------------------------- */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -560,7 +632,7 @@ a:hover {
 }
 
 .obrigatorio {
-  color: #b42318;
+  color: var(--senac-danger);
 }
 
 .form-control,
@@ -572,7 +644,7 @@ a:hover {
 .form-control:focus,
 .form-select:focus {
   border-color: var(--senac-blue);
-  box-shadow: 0 0 0 0.2rem rgba(0, 74, 141, 0.15);
+  box-shadow: 0 0 0 0.2rem rgba(var(--senac-blue-rgb), 0.15);
 }
 
 .form-section {
@@ -603,6 +675,9 @@ a:hover {
   border-radius: 0.65rem;
 }
 
+/* --------------------------------------------------------------------------
+   Mensagens flash (sucesso, erro, aviso e informação)
+   -------------------------------------------------------------------------- */
 .flash-stack {
   display: grid;
   gap: 0.75rem;
@@ -643,13 +718,65 @@ a:hover {
   color: var(--senac-muted);
 }
 
+/* --------------------------------------------------------------------------
+   Layout administrativo: topbar e sidebar colapsável
+   -------------------------------------------------------------------------- */
 .admin-layout .page {
-  background: #f5f7fa;
+  background: var(--senac-surface);
 }
 
 .admin-topbar {
-  border-bottom: 1px solid var(--senac-border);
-  background: #fff;
+  border-bottom: 1px solid var(--senac-blue-dark);
+  background: var(--senac-blue);
+}
+
+.admin-topbar .navbar-brand.admin-brand,
+.admin-topbar .navbar-brand.admin-brand:hover,
+.admin-topbar .navbar-brand.admin-brand:focus {
+  color: var(--senac-accent-light);
+}
+
+.admin-topbar .navbar-brand.admin-brand span {
+  color: var(--senac-accent-light);
+  opacity: 1;
+}
+
+.admin-topbar .navbar-brand.admin-brand .bi-mortarboard-fill {
+  color: #fff;
+}
+
+.admin-topbar .navbar-nav .nav-link {
+  color: var(--senac-accent-light);
+}
+
+.admin-topbar .navbar-nav .nav-link:hover,
+.admin-topbar .navbar-nav .nav-link.active {
+  color: #fff;
+}
+
+.admin-topbar .navbar-toggler {
+  color: #fff;
+  border-color: #fff;
+}
+
+.admin-topbar .navbar-toggler .bi-list {
+  color: #fff;
+}
+
+.admin-topbar .navbar-toggler-icon {
+  filter: brightness(0) invert(1);
+}
+
+.admin-topbar .btn-outline-primary {
+  color: #fff;
+  border-color: #fff;
+}
+
+.admin-topbar .btn-outline-primary:hover,
+.admin-topbar .btn-outline-primary:focus {
+  color: var(--senac-blue);
+  background: var(--senac-accent);
+  border-color: var(--senac-accent);
 }
 
 .admin-sidebar {
@@ -664,6 +791,7 @@ a:hover {
 
 .admin-sidebar .navbar-collapse {
   flex-direction: column;
+  align-items: stretch;
 }
 
 .admin-sidebar .nav-label {
@@ -692,6 +820,12 @@ a:hover {
 .admin-sidebar .nav-link i {
   color: var(--senac-blue);
   font-size: 1.1rem;
+}
+
+.admin-sidebar .nav-link:hover {
+  background: var(--senac-blue-soft);
+  color: var(--senac-blue-dark);
+  text-decoration: none;
 }
 
 .admin-sidebar .nav-link.active {
@@ -737,12 +871,11 @@ a:hover {
     border-right: 0;
     border-bottom: 0;
   }
-
-  .admin-sidebar > .nav-label {
-    margin-top: 1rem;
-  }
 }
 
+/* --------------------------------------------------------------------------
+   Cabeçalho e botões de ação das páginas administrativas
+   -------------------------------------------------------------------------- */
 .admin-page-header {
   display: flex;
   align-items: flex-start;
@@ -770,6 +903,9 @@ a:hover {
   gap: 0.5rem;
 }
 
+/* --------------------------------------------------------------------------
+   Indicadores (stat cards) e área do gráfico do painel
+   -------------------------------------------------------------------------- */
 .stat-card {
   display: grid;
   gap: 0.25rem;
@@ -804,6 +940,11 @@ a:hover {
   color: var(--senac-blue);
 }
 
+.stat-card:nth-child(even) .stat-card__icon {
+  background: var(--senac-warning-soft);
+  color: var(--senac-accent-ink);
+}
+
 .stat-card__value {
   color: var(--senac-blue-dark);
   font-size: 2rem;
@@ -821,6 +962,9 @@ a:hover {
   height: 16rem;
 }
 
+/* --------------------------------------------------------------------------
+   Tabelas administrativas, links de ação e formulários inline
+   -------------------------------------------------------------------------- */
 .table-panel {
   overflow: hidden;
   border: 1px solid var(--senac-border);
@@ -840,7 +984,7 @@ a:hover {
 
 .senac-table thead th {
   border-bottom: 1px solid var(--senac-border);
-  background: #f8fafc;
+  background: var(--senac-surface);
   color: var(--senac-muted);
   font-size: 0.75rem;
   font-weight: 700;
@@ -854,7 +998,7 @@ a:hover {
 }
 
 .senac-table tbody tr:hover {
-  background: #f8fbff;
+  background: var(--senac-blue-soft);
 }
 
 .senac-table small {
@@ -876,7 +1020,7 @@ a:hover {
 }
 
 .link-button--danger {
-  color: #b42318 !important;
+  color: var(--senac-danger) !important;
 }
 
 .inline-form {
@@ -891,6 +1035,9 @@ a:hover {
   min-width: 140px;
 }
 
+/* --------------------------------------------------------------------------
+   Páginas de erro (400, 403, 404 e 500)
+   -------------------------------------------------------------------------- */
 .error-page {
   padding: 3rem 1.5rem;
   border: 1px solid var(--senac-border);
@@ -902,12 +1049,15 @@ a:hover {
 
 .error-code {
   margin: 0;
-  color: #b45309;
+  color: var(--senac-accent-ink);
   font-size: 4rem;
   font-weight: 800;
   line-height: 1;
 }
 
+/* --------------------------------------------------------------------------
+   Responsividade: sidebar, filtros, colunas e largura de ações
+   -------------------------------------------------------------------------- */
 @media (max-width: 991px) {
   .admin-sidebar {
     border-right: 0;

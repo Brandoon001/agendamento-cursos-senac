@@ -39,6 +39,7 @@ CAMPOS_TURMA = (
 )
 
 
+# Utilitários: slug amigável e cidade padrão do catálogo.
 def gerar_slug(texto: str) -> str:
     """Converte um texto livre em um identificador amigável para URL."""
     normalizado = unicodedata.normalize("NFKD", texto or "")
@@ -144,6 +145,7 @@ class CursoService:
                 "Não foi possível excluir o curso. Desative-o para arquivar."
             ) from erro
 
+    # Turmas: consultas, cadastro, edição e exclusão.
     def listar_turmas(
         self,
         curso_id: int,
@@ -211,6 +213,7 @@ class CursoService:
                 "Não foi possível excluir a turma. Desative-a para arquivar."
             ) from erro
 
+    # Auxiliares privados: normalização de dados e persistência no banco.
     def _aplicar_dados_do_curso(
         self,
         curso: Curso,
@@ -383,6 +386,7 @@ class CursoService:
 
 
 
+# Regras de visibilidade usadas pelas rotas públicas do catálogo.
 def curso_esta_visivel(curso: Curso | None) -> bool:
     """Atalho usado pelas rotas públicas do catálogo de Sobral."""
     return (
