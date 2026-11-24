@@ -611,6 +611,30 @@ a:hover {
   gap: 1rem 1.25rem;
 }
 
+/* Formulário de pré-inscrição */
+.form-grid--inscricao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  max-width: 760px;
+  margin-left: 0;
+  margin-right: auto;
+  gap: 16px;
+}
+
+.form-grid--inscricao .field--span-2 {
+  grid-column: 1;
+}
+
+/* Formulário público de pré-inscrição: campos em coluna única */
+.form-grid--inscricao {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.form-grid--inscricao .field--span-2 {
+  grid-column: span 1;
+}
+
 .field {
   display: grid;
   align-content: start;

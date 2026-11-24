@@ -29,7 +29,6 @@
 
   <div class="field{% if span %} field--span-2{% endif %}">
     {{ campo.label(class='form-label') }}
-    {% if campo.flags.required and campo.type != 'BooleanField' %}<span class="obrigatorio" aria-hidden="true"> *</span>{% endif %}
     {{ campo(**opcoes) }}
     {% if help %}
       <small id="{{ campo.id }}-ajuda" class="form-text text-muted">{{ help }}</small>
@@ -46,8 +45,9 @@
   <div class="field field--checkbox{% if span %} field--span-2{% endif %}">
     <div class="form-check">
       {{ campo(class='form-check-input' ~ (' is-invalid' if campo.errors else '')) }}
-      {{ campo.label(class='form-check-label') }}
-      {% if campo.flags.required %}<span class="obrigatorio" aria-hidden="true"> *</span>{% endif %}
+      <label class="form-check-label" for="{{ campo.id }}">
+        {{ campo.label.text }}{% if campo.flags.required %}<span class="obrigatorio" aria-hidden="true"> *</span>{% endif %}
+      </label>
       {% if campo.errors %}
         <div class="invalid-feedback d-block">
           {% for erro in campo.errors %}<span class="d-block">{{ erro }}</span>{% endfor %}

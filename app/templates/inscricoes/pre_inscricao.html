@@ -34,7 +34,7 @@
 
       <div class="form-section mt-0 pt-0 border-0">
         <h2><i class="bi bi-person" aria-hidden="true"></i> Dados pessoais</h2>
-        <div class="form-grid">
+        <div class="form-grid form-grid--inscricao">
           {{ field(formulario.nome_completo, span=true, atributos={'autocomplete': 'name', 'placeholder': 'Nome e sobrenome'}) }}
           {{ field(formulario.cpf, atributos={'inputmode': 'numeric', 'placeholder': '000.000.000-00', 'data-mask': 'cpf'}) }}
           {{ field(formulario.data_nascimento) }}
@@ -43,7 +43,7 @@
 
       <div class="form-section">
         <h2><i class="bi bi-envelope" aria-hidden="true"></i> Contato</h2>
-        <div class="form-grid">
+        <div class="form-grid form-grid--inscricao">
           {{ field(formulario.email, span=true, atributos={'type': 'email', 'autocomplete': 'email', 'placeholder': 'voce@exemplo.com'}) }}
           {{ field(formulario.telefone, span=true, atributos={'type': 'tel', 'autocomplete': 'tel', 'placeholder': '(00) 00000-0000', 'data-mask': 'telefone'}) }}
         </div>
@@ -51,7 +51,7 @@
 
       <div class="form-section">
         <h2><i class="bi bi-chat-left-text" aria-hidden="true"></i> Informações adicionais</h2>
-        <div class="form-grid">
+        <div class="form-grid form-grid--inscricao">
           {{ field(formulario.observacoes, span=true, atributos={'rows': 4, 'placeholder': 'Se desejar, informe algo que devemos saber.'}) }}
           {{ checkbox_field(formulario.aceite, span=true) }}
         </div>
