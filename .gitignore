@@ -1,0 +1,16 @@
+
+# Arquivos temporários do Python
+__pycache__/
+*.py[cod]
+
+# Ambientes virtuais
+.venv/
+venv/
+
+# Variáveis de ambiente
+.env
+
+# Cache do pytest
+.pytest_cache/
+# Cache Python dos testes
+tests/__pycache__/
