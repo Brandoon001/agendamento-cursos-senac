@@ -33,8 +33,7 @@ def test_curso_gratuito_aceita_pre_inscricao(app):
         tipo=TipoCurso.GRATUITO,
     )
 
-    assert curso.e_gratuito is True
-    assert curso.e_pago is False
+    assert curso.tipo is TipoCurso.GRATUITO
     assert curso.aceita_pre_inscricao is True
 
 
@@ -61,31 +60,32 @@ def test_relacionamento_entre_curso_e_inscricao(app):
     assert inscricao.administrador is None
 
 
-def test_curso_pago_exige_link_externo(app):
+def test_curso_usa_sobral_como_cidade_padrao(app):
     curso = Curso(
-        titulo="Curso Pago sem Link",
-        descricao="Curso fictício usado apenas em testes.",
-        tipo=TipoCurso.PAGO,
-    )
-
-    db.session.add(curso)
-
-    with pytest.raises(IntegrityError):
-        db.session.commit()
-
-    db.session.rollback()
-
-
-def test_cpf_nao_pode_repetir_no_mesmo_curso(app):
-    curso = Curso(
-        titulo="Curso Gratuito de Teste",
+        titulo="Curso sem Cidade Informada",
         descricao="Curso fictício usado apenas em testes.",
         tipo=TipoCurso.GRATUITO,
     )
+
     db.session.add(curso)
     db.session.commit()
 
-    for _ in range(2):
+    assert curso.cidade == "Sobral"
+
+
+def test_cpf_nao_pode_repetir_em_cursos_diferentes(app):
+    cursos = [
+        Curso(
+            titulo=f"Curso Gratuito {indice}",
+            descricao="Curso fictício usado apenas em testes.",
+            tipo=TipoCurso.GRATUITO,
+        )
+        for indice in (1, 2)
+    ]
+    db.session.add_all(cursos)
+    db.session.commit()
+
+    for curso in cursos:
         db.session.add(
             Inscricao(
                 curso=curso,

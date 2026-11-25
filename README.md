@@ -1,38 +1,52 @@
-# SENAC Cursos
+# SENAC Sobral — Cursos Gratuitos
 
-Aplicação Flask para divulgação de cursos do SENAC, com dois fluxos:
+Aplicação Flask para divulgação dos **cursos gratuitos do SENAC em Sobral**, com
+pré-inscrição interna analisada pelo administrador.
 
-- **cursos pagos**: direcionamento para um link externo individual de compra;
-- **cursos gratuitos**: pré-inscrição interna, analisada pelo administrador.
+Não há cursos pagos no catálogo nem no painel administrativo. Para outras
+oportunidades, a interface oferece apenas um link externo para o portal oficial
+de cursos do Ceará: https://cursos.ce.senac.br/.
 
-O sistema possui um único administrador. Este repositório contém **apenas a
-fundação compartilhada**; as regras de catálogo, pré-inscrição e painel
-administrativo serão implementadas pelos integrantes da equipe.
+O sistema possui um único administrador. Este repositório contém a aplicação
+completa: catálogo filtrado por cidade, turmas, controle de vagas,
+pré-inscrição, autenticação, painel administrativo e exportação das inscrições
+em planilha Excel.
 
-## Escopo da fundação
+## Documentação
+
+A documentação detalhada de todas as áreas está em [`docs/`](docs/INDICE.md):
+arquitetura, configuração, banco, modelos, serviços, formulários, fluxos, rotas,
+painel, interface, segurança, testes, CLI e manutenção. O documento
+[`docs/MODULO_CURSOS.md`](docs/MODULO_CURSOS.md) mantém o material de estudo
+original do módulo de cursos.
+
+## Escopo atual
 
 Já implementado:
 
 - Application Factory (`create_app`);
 - configurações por ambiente e leitura de `.env`;
 - extensões compartilhadas: SQLAlchemy, Migrate, Login e CSRF;
-- modelos `Curso`, `Inscricao` e `Administrador` com relacionamentos e
+- modelos `Curso`, `Turma`, `Inscricao` e `Administrador` com relacionamentos e
   restrições básicas;
 - registro central dos Blueprints;
 - templates base, tratamento de erros e arquivos estáticos;
 - comando CLI para criação do único administrador;
-- migração inicial do banco;
-- testes automatizados da fundação.
-
-Não implementado nesta etapa:
-
-- consulta e exibição real de cursos;
-- formulário e persistência de pré-inscrições;
-- login, logout e painel administrativo completos;
-- CRUD de cursos.
-
-As rotas existentes nesses módulos são placeholders documentados e devem ser
-substituídas pelas implementações dos responsáveis.
+- migrações do banco;
+- catálogo público com busca, filtros, página inicial e detalhe do curso;
+- cadastro, edição, ativação, desativação e exclusão de cursos;
+- cadastro e gerenciamento de turmas com horários e vagas diferentes;
+- controle de vagas por turma, desconsiderando inscrições canceladas;
+- formulário público de pré-inscrição com validação de CPF, turma, vagas e aceite
+  de tratamento de dados;
+- página de confirmação com protocolo;
+- login e logout do administrador com hash de senha, sessão protegida e
+  proteção contra redirecionamento externo;
+- listagem, filtros e alteração de situação das inscrições no painel;
+- exportação das inscrições filtradas para `.xlsx` (`openpyxl`), com valores
+  textuais protegidos contra injeção de fórmulas;
+- comando `seed-demo` com dados fictícios para demonstração;
+- 103 testes automatizados cobrindo todos os módulos.
 
 ## Requisitos
 
@@ -62,9 +76,10 @@ substituídas pelas implementações dos responsáveis.
 │   │   ├── base.py              # TimestampMixin
 │   │   ├── enums.py             # TipoCurso e StatusInscricao
 │   │   ├── curso.py
+│   │   ├── turma.py             # Turmas, horários e vagas
 │   │   ├── inscricao.py
 │   │   └── administrador.py
-│   ├── services/                # Implementações dos contratos de negócio
+│   ├── services/                # Regras de negócio (curso_service.py etc.)
 │   ├── forms/                   # Formulários WTForms dos módulos
 │   ├── static/
 │   │   ├── css/style.css
@@ -79,7 +94,6 @@ substituídas pelas implementações dos responsáveis.
 │       ├── auth/
 │       ├── admin/
 │       └── errors/
-├── legacy/                      # Scripts antigos, fora da aplicação Flask
 ├── migrations/                  # Migrações do banco
 ├── instance/                    # Banco SQLite e arquivos locais
 ├── tests/
@@ -89,9 +103,6 @@ substituídas pelas implementações dos responsáveis.
 ├── run.py
 └── wsgi.py
 ```
-
-A pasta `legacy/` preserva os scripts de coleta anteriores. Ela não é importada
-pela aplicação, não faz parte da fundação e pode ser removida se não for útil.
 
 ## Instalação
 
@@ -126,7 +137,8 @@ de exemplo.
 
 ## Banco de dados
 
-O projeto inclui a migração inicial. Para criar o banco local:
+O projeto inclui as migrações da fundação e do módulo de cursos. Para criar o
+banco local:
 
 ```bash
 flask --app run.py db upgrade
@@ -154,6 +166,16 @@ flask --app run.py criar-admin
 
 As senhas são armazenadas como hash pelo `werkzeug.security`; nunca são salvas
 em texto puro.
+
+Para popular o banco com dados fictícios de demonstração (3 cursos gratuitos em
+Sobral e um administrador `admin@senac.br` / `senac123`):
+
+```bash
+flask --app run.py seed-demo
+```
+
+O comando é idempotente: cursos já existentes são ignorados. Use apenas em
+ambiente local e troque a senha antes de publicar a aplicação.
 
 ## Execução
 
@@ -214,40 +236,48 @@ O Blueprint `auth` é o `login_view` configurado. O Blueprint `admin` já aplica
 
 | Modelo | Tabela | Responsabilidade |
 | --- | --- | --- |
-| `Curso` | `cursos` | Curso pago ou gratuito, dados de divulgação e link externo. |
+| `Curso` | `cursos` | Curso gratuito, cidade e dados de divulgação. |
+| `Turma` | `turmas` | Horário, período e vagas de uma oferta do curso. |
 | `Inscricao` | `inscricoes` | Pré-inscrição em curso gratuito, com status e responsável. |
 | `Administrador` | `administradores` | Único usuário administrativo autenticável. |
 
 Regras refletidas no banco:
 
-- `Curso.tipo` aceita somente `pago` ou `gratuito`;
-- curso pago exige `link_externo`; curso gratuito não pode ter link externo;
-- valores, vagas e carga horária não podem ser negativos;
+- `Curso.cidade` é obrigatória e usa `Sobral` como padrão;
+- todo curso criado pelo painel é gratuito, sem valor ou link externo próprio;
+- vagas e carga horária não podem ser negativas;
 - a data final não pode ser anterior à data inicial;
-- quando informado, o CPF não pode se repetir no mesmo curso;
+- um curso pode ter várias turmas, cada uma com dias, horários e vagas
+  próprios;
+- `Inscricao.turma_id` é opcional e vinculado com `ON DELETE SET NULL`;
+- CPF é obrigatório nas novas inscrições e não pode se repetir no sistema;
 - curso com inscrições **não pode ser excluído**; o histórico é preservado pela
   chave estrangeira `ON DELETE RESTRICT`. Nesse caso, use `Curso.ativo = False`
   para arquivar/desativar o curso;
-- `Curso.vagas` é apenas informativo nesta fundação: não existe controle
-  automático de vagas, lista de espera ou reserva.
+- turma com inscrições não deve ser excluída; use `Turma.ativo = False`;
+- o controle de vagas é calculado por turma, desconsiderando inscrições com
+  status `cancelada`. Turma sem quantidade de vagas definida é ilimitada.
 
-CPF, e-mail e telefone são opcionais no modelo. A obrigatoriedade desses campos
-deve ser definida posteriormente pelo módulo de inscrições, sem exigir mudança
-estrutural na fundação.
+CPF, e-mail e telefone aceitam nulos no modelo para preservar registros antigos.
+O formulário e o serviço de inscrições exigem CPF válido, e a constraint
+`uq_inscricoes_cpf` garante uma única inscrição por pessoa.
 
-As enumerações `TipoCurso` e `StatusInscricao` ficam em
+As enumerações `TipoCurso` (somente `GRATUITO`) e `StatusInscricao` ficam em
 `app/models/enums.py`. Os status de inscrição são: `RECEBIDA`, `EM_ANALISE`,
 `CONTATADA`, `FINALIZADA` e `CANCELADA`. O status inicial é `RECEBIDA`.
+
+As configurações `CIDADE_PADRAO` e `PORTAL_CURSOS_URL` ficam em `app/config.py`
+e podem ser sobrescritas por variáveis de ambiente.
 
 ### Blueprints e endpoints
 
 | Blueprint | Prefixo | Endpoints | Responsável |
 | --- | --- | --- | --- |
 | `main` | `/` | `main.index` | Fundação |
-| `catalogo` | `/cursos` | `catalogo.listar`, `catalogo.detalhe` | Módulo de catálogo |
+| `catalogo` | `/cursos` | `catalogo.listar`, `catalogo.detalhe` | Módulo de cursos |
 | `inscricoes` | `/inscricoes` | `inscricoes.pre_inscricao`, `inscricoes.confirmacao` | Módulo de inscrições |
 | `auth` | `/auth` | `auth.login`, `auth.logout` | Módulo administrativo |
-| `admin` | `/admin` | `admin.dashboard` | Módulo administrativo |
+| `admin` | `/admin` | `admin.dashboard`, `admin.cursos`, `admin.novo_curso`, `admin.editar_curso`, `admin.ativar_curso`, `admin.desativar_curso`, `admin.excluir_curso`, `admin.turmas_do_curso`, `admin.nova_turma`, `admin.editar_turma`, `admin.ativar_turma`, `admin.desativar_turma`, `admin.excluir_turma`, `admin.inscricoes`, `admin.alterar_status_inscricao`, `admin.exportar_inscricoes` | Módulos de cursos e inscrições |
 
 O registro é centralizado em `app/blueprints/__init__.py`. Rotas futuras devem
 ser adicionadas dentro do Blueprint já existente; a fundação não precisa ser
@@ -257,8 +287,8 @@ alterada para isso.
 
 `app/contracts.py` define os protocolos:
 
-- `CatalogoService`: listagem pública, busca por identificador e obtenção do
-  link de compra;
+- `CatalogoService`: listagem pública de cursos gratuitos da cidade
+  configurada e busca por identificador;
 - `InscricaoService`: criação de pré-inscrição, listagem e alteração de status.
   O contrato **não exige controle automático de vagas**; eventuais regras de
   disponibilidade devem ser definidas explicitamente pelo módulo;
@@ -267,26 +297,36 @@ alterada para isso.
 As implementações concretas devem ficar em `app/services/`. Os Blueprints devem
 chamar os serviços, não concentrar regras de negócio em `routes.py`.
 
-## Como implementar cada módulo
+## Módulos e regras adotadas
 
-### Módulo de catálogo e cursos pagos
+### Módulo de cursos
 
 Arquivos principais:
 
-- `app/blueprints/catalogo/routes.py`;
-- `app/templates/catalogo/`;
-- `app/services/catalogo_service.py`;
-- `app/forms/` (formulários administrativos, se necessário).
+- `app/blueprints/catalogo/routes.py` e `app/blueprints/admin/routes.py`;
+- `app/templates/catalogo/`, `app/templates/admin/cursos/` e
+  `app/templates/components/curso_card.html`;
+- `app/services/curso_service.py`;
+- `app/forms/curso.py`;
+- `app/models/curso.py` e `app/models/turma.py`.
 
-Orientações:
+O módulo já oferece:
 
-1. Use o modelo `Curso` e filtre por `ativo`.
-2. Para `Curso.tipo == TipoCurso.PAGO`, redirecione para
-   `Curso.link_externo`.
-3. Para `Curso.tipo == TipoCurso.GRATUITO`, aponte para
-   `url_for("inscricoes.pre_inscricao", curso_id=curso.id)`.
-4. Reaproveite `base.html` e os blocos Jinja existentes.
-5. Não altere o Application Factory nem os modelos sem necessidade.
+1. Página inicial e catálogo público somente com cursos ativos, gratuitos e de
+   Sobral;
+2. busca por nome/descrição;
+3. cards reutilizáveis, detalhe do curso e layout responsivo;
+4. CRUD administrativo somente de cursos gratuitos, com campo `cidade`;
+5. ativação/desativação de cursos e turmas;
+6. turmas com dias, horários, período e vagas próprios;
+7. controle de vagas por turma, ignorando inscrições canceladas;
+8. link externo único para o portal de cursos do SENAC Ceará na navbar e na
+   página inicial.
+
+Cursos gratuitos apontam para
+`url_for("inscricoes.pre_inscricao", curso_id=curso.id)` e podem incluir
+`turma_id` como parâmetro de consulta para que o módulo de inscrições vincule a
+inscrição à turma escolhida.
 
 ### Módulo de pré-inscrições
 
@@ -297,19 +337,22 @@ Arquivos principais:
 - `app/services/inscricao_service.py`;
 - `app/forms/inscricao.py`.
 
-Orientações:
+Regras implementadas:
 
 1. Aceite apenas cursos gratuitos, ativos e que aceitem pré-inscrição.
 2. Valide o CSRF (já habilitado globalmente; use `csrf_token()` no formulário).
 3. Persista `Inscricao` com status inicial `StatusInscricao.RECEBIDA`.
-4. Defina a obrigatoriedade de CPF, e-mail e telefone na validação do módulo;
-   o modelo aceita esses campos nulos.
-5. Não implemente controle automático de vagas por conta própria: o contrato
-   `InscricaoService` não exige essa regra. Se ela for necessária, deve ser
-   especificada e implementada explicitamente.
-6. Trate `IntegrityError` para CPF duplicado no mesmo curso quando o CPF for
-   informado.
-7. Nunca use dados reais de alunos em exemplos, testes ou seeds.
+4. CPF é obrigatório e validado pelo formulário e pelo serviço; e-mail e
+   telefone também são obrigatórios no formulário público.
+5. O módulo de cursos já expõe turmas e o cálculo de vagas em
+   `Turma.vagas_disponiveis`. Se a inscrição estiver vinculada a uma turma,
+   valide a disponibilidade antes de persistir e associe `Inscricao.turma`.
+6. Trate `IntegrityError` para CPF duplicado em qualquer curso; o serviço
+   normaliza a máscara antes de consultar e gravar.
+7. Nunca use dados reais de alunos em exemplos, testes ou seeds;
+8. o protocolo exibido na confirmação tem o formato `INS-ANO-00001`;
+9. a confirmação só pode ser vista pela sessão que criou a inscrição (ou pelo
+   administrador).
 
 ### Módulo administrativo e autenticação
 
@@ -317,19 +360,26 @@ Arquivos principais:
 
 - `app/blueprints/auth/routes.py`;
 - `app/blueprints/admin/routes.py`;
-- `app/templates/auth/` e `app/templates/admin/`;
-- `app/services/autenticacao_service.py`.
+- `app/templates/auth/`, `app/templates/admin/` e
+  `app/templates/admin/inscricoes.html`;
+- `app/services/autenticacao_service.py`;
+- `app/services/exportacao_service.py`.
 
-Orientações:
+Regras implementadas:
 
 1. Implemente `login` com `Administrador.verificar_senha` e `login_user`.
 2. Implemente `logout` com `logout_user`.
 3. Mantenha o `before_request` do Blueprint `admin`; novas rotas já ficam
    protegidas automaticamente.
-4. Use `flask --app run.py criar-admin` para criar o único administrador.
-5. Alterações de status devem registrar `administrador_id` na inscrição.
-6. Ao gerenciar cursos com inscrições, **arquive** (`ativo = False`) em vez de
-   excluir. A exclusão é bloqueada pelo banco para preservar o histórico.
+4. O link de login não aparece na navegação pública. O acesso administrativo é
+   feito diretamente em `/auth/login` por quem já conhece o endereço.
+5. Use `flask --app run.py criar-admin` para criar o único administrador.
+6. Alterações de status registram `administrador_id` na inscrição;
+7. ao gerenciar cursos com inscrições, **arquive** (`ativo = False`) em vez de
+   excluir. A exclusão é bloqueada pelo banco para preservar o histórico;
+8. `/admin/inscricoes` filtra por nome/CPF/e-mail, situação e curso;
+9. `/admin/inscricoes/exportar` gera um `.xlsx` com exatamente o mesmo filtro da
+   tela, incluindo protocolo, contato, turma, situação e observações.
 
 ### Alterações no banco
 
@@ -344,29 +394,42 @@ flask --app run.py db upgrade
 Não edite arquivos já aplicados em `migrations/versions/` sem necessidade.
 Mantenha as mudanças de esquema pequenas e compatíveis com os demais módulos.
 A migração `b7c1d2e3f4a5` já aplica as revisões de status, campos opcionais e
-preservação do histórico; migrações anteriores não devem ser apagadas. Ela
-converte os status antigos assim: `pendente` → `recebida`, `lista_espera` →
-`em_analise`, `confirmada` → `finalizada` e `cancelada` → `cancelada`.
+preservação do histórico; a migração `c3d4e5f6a7b8` cria as turmas e o vínculo
+opcional `inscricoes.turma_id`. A migração `f6a7b8c9d0e1` adiciona
+`cursos.cidade` (padrão `Sobral`) e exclui cursos pagos e seu histórico. A
+migração `a2b3c4d5e6f7` substitui a unicidade de CPF por curso pela unicidade
+global, normalizando CPFs antigos para `000.000.000-00` e mantendo apenas a
+inscrição mais antiga de cada CPF. Migrações anteriores não devem ser apagadas.
+A `b7c1d2e3f4a5` converte os status antigos assim: `pendente` → `recebida`,
+`lista_espera` → `em_analise`, `confirmada` → `finalizada` e `cancelada` →
+`cancelada`.
 
 Se precisar reverter apenas a última revisão:
 
 ```bash
-flask --app run.py db downgrade e20f62e9afcd
+flask --app run.py db downgrade f6a7b8c9d0e1
 ```
 
-O downgrade preenche CPF/e-mail nulos com marcadores técnicos para restaurar o
-schema antigo. Esses valores não representam dados reais.
+O downgrade restaura a constraint por curso. Um downgrade até `c3d4e5f6a7b8`
+remove a coluna `cidade`. Os cursos pagos excluídos pela migração
+`f6a7b8c9d0e1` não podem ser restaurados.
 
 ## Regras para integração
 
-- Não importe nada da pasta `legacy/` nem de repositórios externos.
+- Os dados do catálogo são gerenciados apenas pelo painel administrativo.
 - Não crie um segundo administrador; o comando CLI já impõe essa regra.
-- Curso pago deve ter link externo individual; curso gratuito não deve ter.
-- Pré-inscrição é exclusiva para cursos gratuitos.
+- Todos os cursos são gratuitos e pertencem a uma cidade; o catálogo público
+  mostra apenas os cursos de `CIDADE_PADRAO` (Sobral).
+- Não recrie campos ou rotas de compra. O único direcionamento externo é o link
+  único para https://cursos.ce.senac.br/.
+- Pré-inscrição é exclusiva para cursos ativos da cidade configurada.
 - Cursos com inscrições não devem ser excluídos; use `ativo = False` para
   arquivar. O banco bloqueia a exclusão para preservar o histórico.
-- Não presuma controle automático de vagas; o contrato atual não exige essa
-  regra.
+- Turmas com inscrições também não devem ser excluídas; use
+  `Turma.ativo = False`.
+- O controle de vagas é feito por turma por meio de `Turma.vagas` e das
+  propriedades `vagas_ocupadas`, `vagas_disponiveis`, `tem_vagas` e
+  `disponivel`. Inscrições canceladas não ocupam vaga.
 - Mantenha os nomes de endpoints existentes para não quebrar `url_for`.
 - Prefira estender templates e Blueprints existentes a modificar a fundação.
 - Nunca versione `.env`, banco local ou dados reais de alunos.
