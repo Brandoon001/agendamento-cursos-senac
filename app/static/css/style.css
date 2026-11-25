@@ -1,335 +1,1151 @@
+/* --------------------------------------------------------------------------
+   Tokens de identidade visual: azul SENAC, amarelo de destaque e neutros
+   -------------------------------------------------------------------------- */
 :root {
-  --azul: #004b8d;
-  --azul-escuro: #00325e;
-  --laranja: #f28c28;
-  --texto: #1f2933;
-  --texto-suave: #52606d;
-  --fundo: #f5f7fa;
-  --superficie: #ffffff;
-  --borda: #d9e2ec;
-  --sombra: 0 12px 30px rgba(15, 23, 42, 0.08);
-  --raio: 14px;
+  --senac-blue: #004a8d;
+  --senac-blue-dark: #003b71;
+  --senac-blue-soft: #e6f0f8;
+  --senac-blue-rgb: 0, 74, 141;
+  --senac-accent: #ffb822;
+  --senac-accent-light: #ffe08a;
+  --senac-accent-dark: #f19300;
+  --senac-accent-ink: #8a5000;
+  --senac-secondary: #3182a7;
+  --senac-text: #333539;
+  --senac-muted: #686a6c;
+  --senac-border: #e4e7eb;
+  --senac-surface: #f8f8f8;
+  --senac-success: #15734e;
+  --senac-success-soft: #e6f4ea;
+  --senac-danger: #b42318;
+  --senac-danger-soft: #fdecec;
+  --senac-warning: var(--senac-accent-ink);
+  --senac-warning-soft: #fff4e0;
+  --senac-info: var(--senac-blue-dark);
+  --senac-info-soft: var(--senac-blue-soft);
+  --senac-contact: #1d5f7d;
+  --senac-contact-soft: #e4f1f6;
+  --senac-radius: 14px;
+  --senac-shadow: 0 12px 30px rgba(0, 74, 141, 0.08);
+  --bs-primary: var(--senac-blue);
+  --bs-primary-rgb: 0, 74, 141;
+  --tblr-primary: var(--senac-blue);
+  --tblr-primary-darken: var(--senac-blue-dark);
 }
 
 * {
   box-sizing: border-box;
 }
 
+/* --------------------------------------------------------------------------
+   Base, links, foco e link de pulo (acessibilidade)
+   -------------------------------------------------------------------------- */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 1.5rem;
+}
+
 body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  color: var(--texto);
-  background: var(--fundo);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--senac-text);
+  background: var(--senac-surface);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
 }
 
 a {
-  color: var(--azul);
+  color: var(--senac-blue);
   text-decoration: none;
 }
 
 a:hover {
+  color: var(--senac-blue-dark);
   text-decoration: underline;
 }
 
-.container {
-  width: min(1120px, 92vw);
-  margin-inline: auto;
+:focus-visible {
+  outline: 3px solid rgba(var(--senac-blue-rgb), 0.35);
+  outline-offset: 2px;
 }
 
-.site-header {
-  background: var(--azul);
-  color: #fff;
-  box-shadow: var(--sombra);
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 1rem;
+  z-index: 2000;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: var(--senac-blue-dark);
+  box-shadow: var(--senac-shadow);
 }
 
-.nav {
-  display: flex;
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   Botões: primário, contorno e botão de destaque amarelo
+   -------------------------------------------------------------------------- */
+.btn-primary {
+  --bs-btn-bg: var(--senac-blue);
+  --bs-btn-border-color: var(--senac-blue);
+  --bs-btn-hover-bg: var(--senac-blue-dark);
+  --bs-btn-hover-border-color: var(--senac-blue-dark);
+  --bs-btn-active-bg: var(--senac-blue-dark);
+  --bs-btn-active-border-color: var(--senac-blue-dark);
+  --bs-btn-disabled-bg: var(--senac-blue);
+  --bs-btn-disabled-border-color: var(--senac-blue);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--senac-blue);
+  --bs-btn-border-color: var(--senac-blue);
+  --bs-btn-hover-bg: var(--senac-blue);
+  --bs-btn-hover-border-color: var(--senac-blue);
+  --bs-btn-active-bg: var(--senac-blue-dark);
+  --bs-btn-active-border-color: var(--senac-blue-dark);
+}
+
+.btn-accent {
+  --bs-btn-color: var(--senac-text);
+  --bs-btn-bg: var(--senac-accent);
+  --bs-btn-border-color: var(--senac-accent);
+  --bs-btn-hover-color: var(--senac-text);
+  --bs-btn-hover-bg: var(--senac-accent-dark);
+  --bs-btn-hover-border-color: var(--senac-accent-dark);
+}
+
+/* --------------------------------------------------------------------------
+   Cabeçalho público: marca, busca e navegação
+   -------------------------------------------------------------------------- */
+.public-header {
+  background: var(--senac-blue);
+  box-shadow: 0 4px 18px rgba(var(--senac-blue-rgb), 0.18);
+}
+
+.public-brand,
+.admin-brand {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  min-height: 68px;
-}
-
-.brand {
-  color: #fff;
-  font-size: 1.2rem;
+  gap: 0.55rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
-.brand:hover {
-  text-decoration: none;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-}
-
-.nav-links a {
-  color: #e8f1fb;
+.public-brand span,
+.admin-brand span {
+  opacity: 0.75;
   font-weight: 500;
 }
 
-.nav-links a:hover {
+.public-header .navbar-brand.public-brand,
+.public-header .navbar-brand.public-brand:hover,
+.public-header .navbar-brand.public-brand:focus {
+  color: var(--senac-accent-light);
+}
+
+.public-header .navbar-brand.public-brand span {
+  color: var(--senac-accent-light);
+  opacity: 1;
+}
+
+.public-header .navbar-brand.public-brand .bi-mortarboard-fill {
   color: #fff;
 }
 
-.inline-form {
-  margin: 0;
-}
-
-.link-button {
-  border: 0;
-  background: transparent;
-  color: #e8f1fb;
-  font: inherit;
+.public-header .nav-link {
+  color: var(--senac-accent-light);
   font-weight: 500;
-  cursor: pointer;
-  padding: 0;
 }
 
-.link-button:hover {
+.public-header .nav-link:hover,
+.public-header .nav-link.active,
+.public-header .nav-link[aria-current="page"] {
+  color: var(--senac-accent-light);
+}
+
+.public-header .nav-link.active::after {
+  content: "";
+  display: block;
+  height: 2px;
+  margin-top: 0.25rem;
+  border-radius: 2px;
+  background: var(--senac-accent-light);
+}
+
+.public-main {
+  min-height: calc(100vh - 180px);
+}
+
+/* --------------------------------------------------------------------------
+   Rodapé do site
+   -------------------------------------------------------------------------- */
+.site-footer {
+  padding: 1.5rem 0;
+  border-top: 4px solid var(--senac-accent);
+  background: #fff;
+  color: var(--senac-muted);
+  font-size: 0.92rem;
+}
+
+/* --------------------------------------------------------------------------
+   Destaque da página inicial (hero) e títulos de seção
+   -------------------------------------------------------------------------- */
+.senac-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2rem, 5vw, 4.25rem);
+  border-radius: 1.35rem;
+  background: var(--senac-blue);
+  color: #fff;
+  box-shadow: var(--senac-shadow);
+}
+
+.senac-hero::after {
+  content: "";
+  position: absolute;
+  right: -6rem;
+  bottom: -9rem;
+  width: 22rem;
+  height: 22rem;
+  border: 2px solid rgba(255, 184, 34, 0.25);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.senac-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.senac-hero h1 {
+  margin: 0.35rem 0 1rem;
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--senac-accent-light)
+}
+
+.senac-hero p {
+  max-width: 62ch;
+  color: var(--senac-blue-soft);
+  font-size: 1.05rem;
+}
+
+.senac-hero .eyebrow {
+  color: var(--senac-accent);
+}
+
+.senac-hero .external-course-link {
+  margin: 1.25rem 0 0;
+  font-size: 0.95rem;
+}
+
+.senac-hero .external-course-link a {
   color: #fff;
   text-decoration: underline;
-}
-
-.page {
-  flex: 1;
-  padding-block: 2.5rem 4rem;
-}
-
-.hero {
-  padding: clamp(2rem, 5vw, 4rem);
-  border-radius: calc(var(--raio) + 6px);
-  background: linear-gradient(135deg, var(--azul) 0%, var(--azul-escuro) 100%);
-  color: #fff;
-  box-shadow: var(--sombra);
-}
-
-.hero h1 {
-  margin: 0.25rem 0 1rem;
-  font-size: clamp(2rem, 4vw, 3.25rem);
-  line-height: 1.1;
-}
-
-.hero p {
-  max-width: 62ch;
-  color: #dbeafe;
-  font-size: 1.08rem;
+  text-underline-offset: 0.2em;
 }
 
 .eyebrow {
   margin: 0;
-  color: var(--laranja);
+  color: var(--senac-accent);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.button {
-  display: inline-block;
-  margin-top: 1rem;
-  padding: 0.75rem 1.3rem;
-  border: 0;
-  border-radius: 999px;
-  background: var(--laranja);
-  color: #1f2933;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
+.section-block {
+  margin-top: 2.75rem;
 }
 
-.button:hover {
-  background: #ff9f43;
-  text-decoration: none;
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
 }
 
-.button--secondary {
-  background: #e8eef5;
-  color: var(--azul-escuro);
+.section-heading h2 {
+  margin: 0.2rem 0 0;
+  color: var(--senac-blue-dark);
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
 }
 
-.grid {
+/* --------------------------------------------------------------------------
+   Grade e cartões de cursos/turmas
+   -------------------------------------------------------------------------- */
+.course-grid,
+.turma-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 1.25rem;
-  margin-top: 2rem;
 }
 
-.card,
-.notice,
-.placeholder,
-.auth-card {
-  padding: 1.5rem;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio);
-  background: var(--superficie);
-  box-shadow: var(--sombra);
+.course-card {
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--senac-border);
+  border-radius: var(--senac-radius);
+  box-shadow: var(--senac-shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.card h2,
-.notice h2,
-.placeholder h2 {
-  margin-top: 0;
-  color: var(--azul-escuro);
+.course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 36px rgba(1, 6, 46, 0.12);
 }
 
-.notice {
-  margin-top: 2rem;
-  border-left: 5px solid var(--laranja);
-}
-
-.page-header {
-  margin-bottom: 1.75rem;
-}
-
-.page-header h1 {
-  margin: 0.25rem 0 0.5rem;
-  color: var(--azul-escuro);
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-}
-
-.page-header p {
-  max-width: 70ch;
-  color: var(--texto-suave);
-}
-
-.placeholder ul {
-  padding-left: 1.25rem;
-  color: var(--texto-suave);
-}
-
-.auth-card {
-  width: min(460px, 100%);
-  margin-inline: auto;
-}
-
-.auth-card h1 {
-  margin: 0.25rem 0 0.75rem;
-  color: var(--azul-escuro);
-}
-
-.form {
-  display: grid;
-  gap: 0.6rem;
-  margin-top: 1.25rem;
-}
-
-.form label {
-  font-weight: 600;
-}
-
-.form input {
+.course-card__image {
   width: 100%;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid var(--borda);
-  border-radius: 10px;
-  font: inherit;
-  background: #fff;
+  height: 170px;
+  object-fit: cover;
+  background: var(--senac-blue-soft);
 }
 
-.form input:focus {
-  outline: 3px solid rgba(0, 75, 141, 0.18);
-  border-color: var(--azul);
-}
-
-.flash-list {
+.course-card__image--placeholder {
   display: grid;
-  gap: 0.75rem;
-  margin: 0 0 1.5rem;
+  place-items: center;
+  color: #fff;
+  font-size: 2.75rem;
+  font-weight: 800;
+  background: var(--senac-blue);
+}
+
+.course-card .card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.course-card .card-title {
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+
+.course-card .card-title a {
+  color: var(--senac-blue-dark);
+}
+
+.course-card__description {
+  color: var(--senac-muted);
+}
+
+.course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0;
   padding: 0;
+  color: var(--senac-muted);
+  font-size: 0.9rem;
   list-style: none;
 }
 
-.flash {
+.course-meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.course-meta i {
+  color: var(--senac-accent);
+}
+
+.course-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Badges de status: verde (ativo), vermelho (inativo), âmbar e azuis
+   -------------------------------------------------------------------------- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status-badge--gratuito,
+.status-badge--ativo,
+.status-badge--ativa,
+.status-badge--finalizada {
+  background: var(--senac-success-soft);
+  color: var(--senac-success);
+}
+
+.status-badge--inativo,
+.status-badge--inativa,
+.status-badge--encerrado,
+.status-badge--cancelada {
+  background: var(--senac-danger-soft);
+  color: var(--senac-danger);
+}
+
+.status-badge--recebida,
+.status-badge--warning {
+  background: var(--senac-warning-soft);
+  color: var(--senac-warning);
+}
+
+.status-badge--em_analise {
+  background: var(--senac-info-soft);
+  color: var(--senac-info);
+}
+
+.status-badge--contatada {
+  background: var(--senac-contact-soft);
+  color: var(--senac-contact);
+}
+
+/* --------------------------------------------------------------------------
+   Painel de filtros e contador de resultados
+   -------------------------------------------------------------------------- */
+.filter-panel {
+  padding: 1.25rem;
+  border: 1px solid var(--senac-border);
+  border-radius: var(--senac-radius);
+  background: #fff;
+  box-shadow: var(--senac-shadow);
+}
+
+.filter-grid {
+  display: grid;
+  gap: 1rem;
+  align-items: end;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.filter-grid--catalogo {
+  grid-template-columns: minmax(220px, 1fr) auto;
+}
+
+.filter-grid--cursos {
+  grid-template-columns: minmax(220px, 1fr) minmax(160px, 180px) auto;
+}
+
+.filter-grid--inscricoes {
+  grid-template-columns: minmax(220px, 1.4fr) minmax(150px, 1fr) minmax(180px, 1fr) auto;
+}
+
+.filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.results-count {
+  margin: 1.25rem 0;
+  color: var(--senac-muted);
+}
+
+.senac-breadcrumb {
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+}
+
+/* --------------------------------------------------------------------------
+   Detalhe público do curso e metadados
+   -------------------------------------------------------------------------- */
+.course-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.course-detail__main,
+.course-detail__aside {
+  padding: 1.75rem;
+  border: 1px solid var(--senac-border);
+  border-radius: var(--senac-radius);
+  background: #fff;
+  box-shadow: var(--senac-shadow);
+}
+
+.course-detail__main h1 {
+  margin: 0.6rem 0 1rem;
+  color: var(--senac-blue-dark);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 1.15;
+}
+
+.course-detail__description {
+  color: var(--senac-muted);
+  white-space: pre-line;
+}
+
+.course-detail__aside h2 {
+  color: var(--senac-blue-dark);
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--senac-border);
+}
+
+.detail-list dt {
+  color: var(--senac-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.detail-list dd {
+  margin: 0.25rem 0 0;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Cartões de turma e indicação de turma indisponível
+   -------------------------------------------------------------------------- */
+.turma-card {
+  height: 100%;
+  border: 1px solid var(--senac-border);
+  border-radius: var(--senac-radius);
+  box-shadow: var(--senac-shadow);
+}
+
+.turma-card--unavailable {
+  border-left: 4px solid var(--senac-accent-dark);
+}
+
+.turma-card h3 {
+  color: var(--senac-blue-dark);
+}
+
+.turma-meta {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  color: var(--senac-muted);
+  font-size: 0.94rem;
+  list-style: none;
+}
+
+/* --------------------------------------------------------------------------
+   Avisos informativos e de atenção
+   -------------------------------------------------------------------------- */
+.notice {
+  margin-top: 1.5rem;
+  padding: 1rem 1.15rem;
+  border-left: 4px solid var(--senac-blue);
+  border-radius: 0.75rem;
+  background: var(--senac-blue-soft);
+}
+
+.notice--warning {
+  border-left-color: var(--senac-accent-dark);
+  background: var(--senac-warning-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Login, comprovante de inscrição e estado vazio
+   -------------------------------------------------------------------------- */
+.auth-card,
+.comprovante,
+.empty-state {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.auth-card {
+  max-width: 460px;
+}
+
+.auth-card h1,
+.comprovante h1 {
+  margin: 0.35rem 0 0.75rem;
+  color: var(--senac-blue-dark);
+}
+
+.comprovante__protocolo {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.85rem 1rem;
-  border-radius: 10px;
-  background: #e8f1fb;
-  border: 1px solid #b8d4f0;
+  padding: 1.25rem 1.5rem;
+  border: 2px dashed var(--senac-accent);
+  border-radius: var(--senac-radius);
+  background: var(--senac-blue-dark);
+  color: #fff;
 }
 
-.flash--success {
-  background: #e6f6ec;
-  border-color: #a8ddb8;
+.comprovante__protocolo span {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-.flash--warning {
-  background: #fff4e0;
-  border-color: #ffd591;
+.comprovante__protocolo strong {
+  font-size: clamp(1.25rem, 3vw, 1.9rem);
+  letter-spacing: 0.05em;
 }
 
-.flash--error,
-.flash--danger {
-  background: #fdecec;
-  border-color: #f5b5b5;
+/* --------------------------------------------------------------------------
+   Formulários: campos, seções, validação e ações
+   -------------------------------------------------------------------------- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
 }
 
-.flash-close {
-  border: 0;
-  background: transparent;
-  font-size: 1.3rem;
+/* Formulário de pré-inscrição */
+.form-grid--inscricao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  max-width: 760px;
+  margin-left: 0;
+  margin-right: auto;
+  gap: 16px;
+}
+
+.form-grid--inscricao .field--span-2 {
+  grid-column: 1;
+}
+
+/* Formulário público de pré-inscrição: campos em coluna única */
+.form-grid--inscricao {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.form-grid--inscricao .field--span-2 {
+  grid-column: span 1;
+}
+
+.field {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+}
+
+.field--span-2 {
+  grid-column: span 2;
+}
+
+.field--checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.form-label {
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.obrigatorio {
+  color: var(--senac-danger);
+}
+
+.form-control,
+.form-select {
+  border-color: var(--senac-border);
+  border-radius: 0.65rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--senac-blue);
+  box-shadow: 0 0 0 0.2rem rgba(var(--senac-blue-rgb), 0.15);
+}
+
+.form-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--senac-border);
+}
+
+.form-section h2 {
+  margin-bottom: 1rem;
+  color: var(--senac-blue-dark);
+  font-size: 1.1rem;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.image-preview {
+  display: block;
+  max-width: 240px;
+  height: auto;
+  margin-top: 0.5rem;
+  border: 1px solid var(--senac-border);
+  border-radius: 0.65rem;
+}
+
+/* --------------------------------------------------------------------------
+   Mensagens flash (sucesso, erro, aviso e informação)
+   -------------------------------------------------------------------------- */
+.flash-stack {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.flash {
+  margin-bottom: 0;
+  box-shadow: var(--senac-shadow);
+}
+
+.empty-state {
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed var(--senac-border);
+  border-radius: var(--senac-radius);
+  background: #fff;
+  text-align: center;
+}
+
+.empty-state__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.75rem;
+  border-radius: 50%;
+  background: var(--senac-blue-soft);
+  color: var(--senac-blue);
+  font-size: 1.4rem;
+}
+
+.empty-state h2 {
+  color: var(--senac-blue-dark);
+  font-size: 1.35rem;
+}
+
+.empty-state p {
+  color: var(--senac-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Layout administrativo: topbar e sidebar colapsável
+   -------------------------------------------------------------------------- */
+.admin-layout .page {
+  background: var(--senac-surface);
+}
+
+.admin-topbar {
+  border-bottom: 1px solid var(--senac-blue-dark);
+  background: var(--senac-blue);
+}
+
+.admin-topbar .navbar-brand.admin-brand,
+.admin-topbar .navbar-brand.admin-brand:hover,
+.admin-topbar .navbar-brand.admin-brand:focus {
+  color: var(--senac-accent-light);
+}
+
+.admin-topbar .navbar-brand.admin-brand span {
+  color: var(--senac-accent-light);
+  opacity: 1;
+}
+
+.admin-topbar .navbar-brand.admin-brand .bi-mortarboard-fill {
+  color: #fff;
+}
+
+.admin-topbar .navbar-nav .nav-link {
+  color: var(--senac-accent-light);
+}
+
+.admin-topbar .navbar-nav .nav-link:hover,
+.admin-topbar .navbar-nav .nav-link.active {
+  color: #fff;
+}
+
+.admin-topbar .navbar-toggler {
+  color: #fff;
+  border-color: #fff;
+}
+
+.admin-topbar .navbar-toggler .bi-list {
+  color: #fff;
+}
+
+.admin-topbar .navbar-toggler-icon {
+  filter: brightness(0) invert(1);
+}
+
+.admin-topbar .btn-outline-primary {
+  color: #fff;
+  border-color: #fff;
+}
+
+.admin-topbar .btn-outline-primary:hover,
+.admin-topbar .btn-outline-primary:focus {
+  color: var(--senac-blue);
+  background: var(--senac-accent);
+  border-color: var(--senac-accent);
+}
+
+.admin-sidebar {
+  padding: 1rem;
+  border-right: 1px solid var(--senac-border);
+  background: #fff;
+}
+
+.navbar-nav.admin-sidebar {
+  flex-direction: column;
+}
+
+.admin-sidebar .navbar-collapse {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.admin-sidebar .nav-label {
+  margin: 0.5rem 0.75rem 0.35rem;
+  color: var(--senac-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+  border-radius: 0.6rem;
+  color: var(--senac-text);
+  font-weight: 500;
+}
+
+.navbar-nav.admin-sidebar .nav-link {
+  padding-inline: 0.75rem;
+}
+
+.admin-sidebar .nav-link i {
+  color: var(--senac-blue);
+  font-size: 1.1rem;
+}
+
+.admin-sidebar .nav-link:hover {
+  background: var(--senac-blue-soft);
+  color: var(--senac-blue-dark);
+  text-decoration: none;
+}
+
+.admin-sidebar .nav-link.active {
+  background: var(--senac-blue-soft);
+  color: var(--senac-blue-dark);
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .admin-layout .page {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    grid-template-areas:
+      "topbar topbar"
+      "sidebar content";
+    align-content: start;
+    min-height: 100%;
+  }
+
+  .admin-layout .admin-topbar {
+    grid-area: topbar;
+  }
+
+  .admin-layout .admin-sidebar-wrapper {
+    grid-area: sidebar;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    background: #fff;
+    border-right: 1px solid var(--senac-border);
+  }
+
+  .admin-layout .page-wrapper {
+    grid-area: content;
+    min-width: 0;
+  }
+
+  .admin-layout .admin-sidebar {
+    width: 100%;
+    border-right: 0;
+    border-bottom: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Cabeçalho e botões de ação das páginas administrativas
+   -------------------------------------------------------------------------- */
+.admin-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.admin-page-header h1 {
+  margin: 0.25rem 0 0.4rem;
+  color: var(--senac-blue-dark);
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+}
+
+.admin-page-header p {
+  max-width: 70ch;
+  margin-bottom: 0;
+  color: var(--senac-muted);
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Indicadores (stat cards) e área do gráfico do painel
+   -------------------------------------------------------------------------- */
+.stat-card {
+  display: grid;
+  gap: 0.25rem;
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--senac-border);
+  border-radius: var(--senac-radius);
+  background: #fff;
+  box-shadow: var(--senac-shadow);
+}
+
+.stat-card--link {
+  color: inherit;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.stat-card--link:hover {
+  transform: translateY(-2px);
+  border-color: var(--senac-blue);
+  color: inherit;
+  text-decoration: none;
+}
+
+.stat-card__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.35rem;
+  border-radius: 0.5rem;
+  background: var(--senac-blue-soft);
+  color: var(--senac-blue);
+}
+
+.stat-card:nth-child(even) .stat-card__icon {
+  background: var(--senac-warning-soft);
+  color: var(--senac-accent-ink);
+}
+
+.stat-card__value {
+  color: var(--senac-blue-dark);
+  font-size: 2rem;
+  font-weight: 800;
   line-height: 1;
-  cursor: pointer;
-  color: var(--texto-suave);
 }
 
-.muted {
-  color: var(--texto-suave);
+.stat-card__label {
+  color: var(--senac-muted);
+  font-size: 0.92rem;
 }
 
+.chart-box {
+  position: relative;
+  height: 16rem;
+}
+
+/* --------------------------------------------------------------------------
+   Tabelas administrativas, links de ação e formulários inline
+   -------------------------------------------------------------------------- */
+.table-panel {
+  overflow: hidden;
+  border: 1px solid var(--senac-border);
+  border-radius: var(--senac-radius);
+  background: #fff;
+  box-shadow: var(--senac-shadow);
+}
+
+.table-panel .table-responsive {
+  margin: 0;
+}
+
+.senac-table {
+  min-width: 720px;
+  margin: 0;
+}
+
+.senac-table thead th {
+  border-bottom: 1px solid var(--senac-border);
+  background: var(--senac-surface);
+  color: var(--senac-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.senac-table td {
+  vertical-align: middle;
+}
+
+.senac-table tbody tr:hover {
+  background: var(--senac-blue-soft);
+}
+
+.senac-table small {
+  display: block;
+}
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+  min-width: 220px;
+}
+
+.table-actions .btn-link {
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.link-button--danger {
+  color: var(--senac-danger) !important;
+}
+
+.inline-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.inline-form .form-select {
+  width: auto;
+  min-width: 140px;
+}
+
+/* --------------------------------------------------------------------------
+   Páginas de erro (400, 403, 404 e 500)
+   -------------------------------------------------------------------------- */
 .error-page {
   padding: 3rem 1.5rem;
-  border-radius: var(--raio);
-  background: var(--superficie);
-  border: 1px solid var(--borda);
+  border: 1px solid var(--senac-border);
+  border-radius: var(--senac-radius);
+  background: #fff;
   text-align: center;
-  box-shadow: var(--sombra);
+  box-shadow: var(--senac-shadow);
 }
 
 .error-code {
   margin: 0;
-  color: var(--laranja);
+  color: var(--senac-accent-ink);
   font-size: 4rem;
   font-weight: 800;
   line-height: 1;
 }
 
-.site-footer {
-  padding: 1.5rem 0;
-  border-top: 1px solid var(--borda);
-  color: var(--texto-suave);
-  font-size: 0.92rem;
-  text-align: center;
-  background: var(--superficie);
-}
-
-code {
-  padding: 0.12rem 0.35rem;
-  border-radius: 6px;
-  background: #eef2f6;
-  font-size: 0.92em;
-}
-
-@media (max-width: 640px) {
-  .nav {
-    align-items: flex-start;
-    flex-direction: column;
-    padding-block: 1rem;
+/* --------------------------------------------------------------------------
+   Responsividade: sidebar, filtros, colunas e largura de ações
+   -------------------------------------------------------------------------- */
+@media (max-width: 991px) {
+  .admin-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--senac-border);
   }
 
-  .nav-links {
-    gap: 1rem;
+  .filter-grid--catalogo,
+  .filter-grid--cursos,
+  .filter-grid--inscricoes {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .course-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field--span-2 {
+    grid-column: auto;
+  }
+
+  .filter-actions {
+    align-items: stretch;
+  }
+
+  .filter-actions .btn {
+    flex: 1;
+  }
+
+  .comprovante__protocolo {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .course-card__actions,
+  .admin-actions,
+  .form-actions {
+    width: 100%;
+  }
+
+  .course-card__actions .btn,
+  .admin-actions .btn,
+  .form-actions .btn {
+    flex: 1;
+  }
+
+  .senac-hero {
+    padding: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

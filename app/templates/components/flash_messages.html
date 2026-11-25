@@ -1,12 +1,16 @@
+{# Mensagens flash por categoria: success, danger, warning e info. #}
 {% with mensagens = get_flashed_messages(with_categories=true) %}
   {% if mensagens %}
-    <ul class="flash-list" aria-live="polite">
+    <div class="flash-stack" aria-live="polite" aria-atomic="false">
       {% for categoria, mensagem in mensagens %}
-        <li class="flash flash--{{ categoria }}">
-          <span>{{ mensagem }}</span>
-          <button type="button" class="flash-close" data-dismiss aria-label="Fechar">&times;</button>
-        </li>
+        {% set classe = {'success': 'success', 'sucesso': 'success', 'error': 'danger', 'danger': 'danger', 'warning': 'warning', 'info': 'info'} %}
+        {% set icone = {'success': 'check-circle-fill', 'sucesso': 'check-circle-fill', 'error': 'exclamation-triangle-fill', 'danger': 'exclamation-triangle-fill', 'warning': 'exclamation-triangle-fill', 'info': 'info-circle-fill'} %}
+        <div class="alert alert-{{ classe.get(categoria, 'info') }} alert-dismissible d-flex align-items-center gap-2 flash flash--{{ categoria }}" role="status">
+          <i class="bi bi-{{ icone.get(categoria, 'info-circle-fill') }}" aria-hidden="true"></i>
+          <span class="flex-fill">{{ mensagem }}</span>
+          <button type="button" class="btn-close" data-dismiss aria-label="Fechar"></button>
+        </div>
       {% endfor %}
-    </ul>
+    </div>
   {% endif %}
 {% endwith %}

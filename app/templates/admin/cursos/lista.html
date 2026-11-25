@@ -1,0 +1,137 @@
+{# Listagem administrativa de cursos, incluindo os inativos. #}
+{% extends "admin_base.html" %}
+{% from "components/ui.html" import breadcrumb %}
+
+{% block title %}Cursos | Painel administrativo{% endblock %}
+
+{% block content %}
+  {{ breadcrumb([
+    {'label': 'Painel', 'url': url_for('admin.dashboard')},
+    {'label': 'Cursos'}
+  ]) }}
+
+  <section class="admin-page-header">
+    <div>
+      <p class="eyebrow">Administração</p>
+      <h1>Gerenciar cursos</h1>
+      <p>Cadastre, edite, ative, desative e organize as turmas de cada curso.</p>
+    </div>
+    <div class="admin-actions">
+      <a class="btn btn-primary" href="{{ url_for('admin.novo_curso') }}">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        Novo curso
+      </a>
+    </div>
+  </section>
+
+  <form class="filter-panel" method="get" action="{{ url_for('admin.cursos') }}" role="search">
+    <div class="filter-grid filter-grid--cursos">
+      <div class="field">
+        <label class="form-label" for="q">Buscar</label>
+        <input class="form-control" id="q" name="q" type="search" value="{{ termo }}" placeholder="Nome ou descrição">
+      </div>
+      <div class="field">
+        <label class="form-label" for="situacao">Situação</label>
+        <select class="form-select" id="situacao" name="situacao">
+          <option value="">Todas</option>
+          <option value="ativo" {% if situacao == "ativo" %}selected{% endif %}>Ativos</option>
+          <option value="inativo" {% if situacao == "inativo" %}selected{% endif %}>Inativos</option>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+          Filtrar
+        </button>
+        {% if termo or situacao %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin.cursos') }}">Limpar</a>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+
+  <p class="results-count mt-3">
+    <i class="bi bi-list-check" aria-hidden="true"></i>
+    {{ cursos|length }} curso(s) encontrado(s)
+  </p>
+
+  {% if cursos %}
+    <div class="table-panel">
+      <div class="table-responsive">
+        <table class="table senac-table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Curso</th>
+              <th scope="col">Cidade</th>
+              <th scope="col">Carga</th>
+              <th scope="col">Turmas</th>
+              <th scope="col">Vagas</th>
+              <th scope="col">Situação</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for curso in cursos %}
+              <tr>
+                <td>
+                  <strong>{{ curso.titulo }}</strong>
+                  {% if curso.slug %}<small class="text-muted">/{{ curso.slug }}</small>{% endif %}
+                </td>
+                <td>{{ curso.cidade }}</td>
+                <td>{{ curso.carga_horaria ~ "h" if curso.carga_horaria else "—" }}</td>
+                <td>{{ curso.turmas|length }}</td>
+                <td>
+                  {% if curso.vagas_disponiveis is not none %}
+                    {{ curso.vagas_disponiveis }} disponível(is)
+                  {% else %}
+                    Sem limite
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="status-badge status-badge--{{ 'ativo' if curso.ativo else 'inativo' }}">
+                    {{ "Ativo" if curso.ativo else "Inativo" }}
+                  </span>
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <a class="btn btn-sm btn-link" href="{{ url_for('admin.editar_curso', curso_id=curso.id) }}">Editar</a>
+                    <a class="btn btn-sm btn-link" href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Turmas</a>
+
+                    {% if curso.ativo %}
+                      <form method="post" action="{{ url_for('admin.desativar_curso', curso_id=curso.id) }}" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-link">Desativar</button>
+                      </form>
+                    {% else %}
+                      <form method="post" action="{{ url_for('admin.ativar_curso', curso_id=curso.id) }}" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-link">Ativar</button>
+                      </form>
+                    {% endif %}
+
+                    <form
+                      method="post"
+                      action="{{ url_for('admin.excluir_curso', curso_id=curso.id) }}"
+                      class="inline-form"
+                      data-confirm="Deseja realmente excluir este curso?"
+                    >
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-sm btn-link link-button--danger">Excluir</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="empty-state mt-3">
+      <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-journal-x"></i></span>
+      <h2>Nenhum curso encontrado</h2>
+      <p>Cadastre um novo curso ou ajuste os filtros de busca.</p>
+      <a class="btn btn-primary" href="{{ url_for('admin.novo_curso') }}">Novo curso</a>
+    </div>
+  {% endif %}
+{% endblock %}

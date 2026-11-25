@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flask import Flask, render_template
+from flask import Flask, current_app, render_template
 from flask_wtf.csrf import CSRFError
 
 from app.extensions import db
@@ -25,6 +25,7 @@ def register_error_handlers(app: Flask) -> None:
 
     @app.errorhandler(500)
     def erro_500(erro):
+        current_app.logger.exception("Erro não tratado", exc_info=erro)
         db.session.rollback()
         return render_template("errors/500.html"), 500
 

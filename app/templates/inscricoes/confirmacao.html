@@ -1,18 +1,61 @@
+{# Comprovante exibido ao candidato após a pré-inscrição. #}
 {% extends "base.html" %}
 
 {% block title %}Inscrição registrada | SENAC Cursos{% endblock %}
 
 {% block content %}
-  <section class="page-header">
-    <p class="eyebrow">Confirmação</p>
-    <h1>Pré-inscrição #{{ inscricao_id }}</h1>
-  </section>
+  <section class="comprovante card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5">
+      <div class="text-center mb-4">
+        <span class="stat-card__icon mx-auto mb-3" style="width: 3.5rem; height: 3.5rem; font-size: 1.6rem;" aria-hidden="true">
+          <i class="bi bi-check2-circle"></i>
+        </span>
+        <p class="eyebrow">Confirmação de pré-inscrição</p>
+        <h1>Inscrição registrada!</h1>
+      </div>
 
-  <section class="placeholder">
-    <p>
-      Esta página exibirá a confirmação e o protocolo da pré-inscrição após a
-      implementação do módulo de inscrições.
-    </p>
-    <a class="button button--secondary" href="{{ url_for('catalogo.listar') }}">Voltar ao catálogo</a>
+      <div class="comprovante__protocolo">
+        <span>Protocolo</span>
+        <strong>{{ inscricao.protocolo }}</strong>
+      </div>
+
+      <dl class="detail-list">
+        <div>
+          <dt><i class="bi bi-person" aria-hidden="true"></i> Candidato</dt>
+          <dd>{{ inscricao.nome_completo }}</dd>
+        </div>
+        <div>
+          <dt><i class="bi bi-journal-bookmark" aria-hidden="true"></i> Curso</dt>
+          <dd>{{ inscricao.curso.titulo }}</dd>
+        </div>
+        {% if inscricao.turma %}
+          <div>
+            <dt><i class="bi bi-calendar-week" aria-hidden="true"></i> Turma</dt>
+            <dd>{{ inscricao.turma.nome }} &middot; {{ inscricao.turma.horario_formatado }}</dd>
+          </div>
+        {% endif %}
+        <div>
+          <dt><i class="bi bi-info-circle" aria-hidden="true"></i> Situação</dt>
+          <dd><span class="status-badge status-badge--recebida">{{ inscricao.situacao }}</span></dd>
+        </div>
+        <div>
+          <dt><i class="bi bi-clock-history" aria-hidden="true"></i> Registrada em</dt>
+          <dd>{{ inscricao.criado_em.strftime("%d/%m/%Y às %H:%M") }}</dd>
+        </div>
+      </dl>
+
+      <div class="notice d-flex align-items-start gap-2 mt-4" role="note">
+        <i class="bi bi-shield-check mt-1" aria-hidden="true"></i>
+        <p class="mb-0">
+          Guarde este protocolo. A equipe do SENAC entrará em contato pelos dados
+          informados para confirmar sua vaga.
+        </p>
+      </div>
+
+      <div class="form-actions justify-content-center">
+        <a class="btn btn-primary" href="{{ url_for('catalogo.listar') }}">Ver outros cursos</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">Voltar ao início</a>
+      </div>
+    </div>
   </section>
 {% endblock %}

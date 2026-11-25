@@ -1,0 +1,140 @@
+{# Listagem administrativa de inscrições com filtros e exportação. #}
+{% extends "admin_base.html" %}
+{% from "components/ui.html" import breadcrumb, stat_card %}
+
+{% block title %}Inscrições | Painel administrativo{% endblock %}
+
+{% block content %}
+  {{ breadcrumb([
+    {'label': 'Painel', 'url': url_for('admin.dashboard')},
+    {'label': 'Inscrições'}
+  ]) }}
+
+  <section class="admin-page-header">
+    <div>
+      <p class="eyebrow">Administração</p>
+      <h1>Pré-inscrições</h1>
+      <p>Acompanhe, atualize a situação e exporte as inscrições recebidas.</p>
+    </div>
+    <div class="admin-actions">
+      <a class="btn btn-primary" href="{{ url_for('admin.exportar_inscricoes', q=termo, status=filtro_status, curso_id=filtro_curso_id) }}">
+        <i class="bi bi-file-earmark-excel" aria-hidden="true"></i>
+        Exportar para Excel
+      </a>
+    </div>
+  </section>
+
+  <section class="row g-3" aria-label="Inscrições por situação">
+    {%- for opcao in status_opcoes -%}
+      <div class="col-6 col-md-4 col-xl-2">
+        {{ stat_card(contadores.get(opcao, 0), status_labels[opcao], url_for('admin.inscricoes', status=opcao.value), icone='person-badge') }}
+      </div>
+    {%- endfor -%}
+  </section>
+
+  <form class="filter-panel mt-4" method="get" action="{{ url_for('admin.inscricoes') }}" role="search">
+    <div class="filter-grid filter-grid--inscricoes">
+      <div class="field">
+        <label class="form-label" for="q">Buscar</label>
+        <input class="form-control" id="q" name="q" type="search" value="{{ termo }}" placeholder="Nome, CPF ou e-mail">
+      </div>
+      <div class="field">
+        <label class="form-label" for="status">Situação</label>
+        <select class="form-select" id="status" name="status">
+          <option value="">Todas</option>
+          {%- for opcao in status_opcoes -%}
+            <option value="{{ opcao.value }}"{% if filtro_status == opcao.value %} selected{% endif %}>{{ status_labels[opcao] }}</option>
+          {%- endfor -%}
+        </select>
+      </div>
+      <div class="field">
+        <label class="form-label" for="curso_id">Curso</label>
+        <select class="form-select" id="curso_id" name="curso_id">
+          <option value="">Todos</option>
+          {%- for curso in cursos -%}
+            <option value="{{ curso.id }}"{% if filtro_curso_id == curso.id %} selected{% endif %}>{{ curso.titulo }}</option>
+          {%- endfor -%}
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+          Filtrar
+        </button>
+        {% if termo or filtro_status or filtro_curso_id %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin.inscricoes') }}">Limpar</a>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+
+  <p class="results-count">
+    <i class="bi bi-list-check" aria-hidden="true"></i>
+    {{ inscricoes|length }} inscrição(ões) encontrada(s)
+  </p>
+
+  {% if inscricoes %}
+    <div class="table-panel">
+      <div class="table-responsive">
+        <table class="table senac-table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Protocolo</th>
+              <th scope="col">Candidato</th>
+              <th scope="col">Contato</th>
+              <th scope="col">Curso / Turma</th>
+              <th scope="col">Situação</th>
+              <th scope="col">Registrada em</th>
+              <th scope="col">Atualizar situação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inscricao in inscricoes %}
+              <tr>
+                <td class="fw-semibold">{{ inscricao.protocolo }}</td>
+                <td>
+                  <strong>{{ inscricao.nome_completo }}</strong>
+                  {% if inscricao.cpf %}<small class="text-muted">CPF {{ inscricao.cpf }}</small>{% endif %}
+                </td>
+                <td>
+                  {{ inscricao.email or "—" }}
+                  {% if inscricao.telefone %}<small class="text-muted">{{ inscricao.telefone }}</small>{% endif %}
+                </td>
+                <td>
+                  {{ inscricao.curso.titulo if inscricao.curso else "—" }}
+                  {% if inscricao.turma %}<small class="text-muted">{{ inscricao.turma.nome }}</small>{% endif %}
+                </td>
+                <td>
+                  <span class="status-badge status-badge--{{ inscricao.status.value }}">{{ inscricao.situacao }}</span>
+                </td>
+                <td>{{ inscricao.criado_em.strftime("%d/%m/%Y %H:%M") if inscricao.criado_em else "—" }}</td>
+                <td>
+                  <form
+                    method="post"
+                    class="inline-form"
+                    action="{{ url_for('admin.alterar_status_inscricao', inscricao_id=inscricao.id, q=termo, status=filtro_status, curso_id=filtro_curso_id) }}"
+                  >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <select class="form-select form-select-sm" name="status" aria-label="Situação de {{ inscricao.nome_completo }}">
+                      {%- for opcao in status_opcoes -%}
+                        <option value="{{ opcao.value }}"{% if opcao == inscricao.status %} selected{% endif %}>{{ status_labels[opcao] }}</option>
+                      {%- endfor -%}
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary">Salvar</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="empty-state mt-3">
+      <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-inbox"></i></span>
+      <h2>Nenhuma inscrição encontrada</h2>
+      <p>Ajuste os filtros ou aguarde o envio de novas pré-inscrições.</p>
+      <a class="btn btn-outline-primary" href="{{ url_for('admin.inscricoes') }}">Limpar filtros</a>
+    </div>
+  {% endif %}
+{% endblock %}

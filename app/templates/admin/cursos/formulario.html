@@ -1,0 +1,68 @@
+{# Formulário administrativo de cadastro e edição de curso. #}
+{% extends "admin_base.html" %}
+{% from "components/ui.html" import breadcrumb, field, checkbox_field %}
+
+{% block title %}{{ titulo_pagina }} | Painel administrativo{% endblock %}
+
+{% block content %}
+  {{ breadcrumb([
+    {'label': 'Painel', 'url': url_for('admin.dashboard')},
+    {'label': 'Cursos', 'url': url_for('admin.cursos')},
+    {'label': 'Editar' if curso else 'Novo'}
+  ]) }}
+
+  <section class="admin-page-header">
+    <div>
+      <p class="eyebrow">Administração</p>
+      <h1>{{ titulo_pagina }}</h1>
+      <p>Preencha os dados do curso. Campos marcados com * são obrigatórios.</p>
+    </div>
+  </section>
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        {{ formulario.hidden_tag() }}
+
+        <div class="form-section mt-0 pt-0 border-0">
+          <h2><i class="bi bi-journal-text" aria-hidden="true"></i> Informações do curso</h2>
+          <div class="form-grid">
+            {{ field(formulario.titulo, span=true) }}
+            {{ field(formulario.descricao, span=true, atributos={'rows': 5}) }}
+            {{ field(formulario.cidade) }}
+            {{ field(formulario.slug, atributos={'placeholder': 'gerado-automaticamente'}) }}
+            {{ field(formulario.carga_horaria, atributos={'min': 1}) }}
+            {{ field(formulario.vagas, help='Usado quando o curso não possui turmas com vagas próprias.', atributos={'min': 0}) }}
+            {{ field(formulario.data_inicio) }}
+            {{ field(formulario.data_fim) }}
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2><i class="bi bi-image" aria-hidden="true"></i> Imagem do curso</h2>
+          <div class="form-grid">
+            {{ field(formulario.imagem_url, span=true, help='Informe uma URL pública ou envie um arquivo abaixo. O arquivo enviado tem prioridade.', atributos={'placeholder': 'https://...'}) }}
+            {{ field(formulario.imagem_upload, span=true, help='Formatos aceitos: PNG, JPG, GIF ou WebP, com até 4 MB.', atributos={'accept': 'image/png,image/jpeg,image/gif,image/webp'}) }}
+            {% if curso and curso.imagem_url %}
+              <div class="field field--span-2">
+                <img class="image-preview" src="{{ curso.imagem_url }}" alt="Imagem atual do curso">
+              </div>
+            {% endif %}
+            {{ checkbox_field(formulario.ativo, span=true) }}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check2-circle" aria-hidden="true"></i>
+            Salvar curso
+          </button>
+          {% if curso %}
+            <a class="btn btn-outline-primary" href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Gerenciar turmas</a>
+          {% endif %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin.cursos') }}">Cancelar</a>
+        </div>
+      </div>
+    </div>
+  </form>
+{% endblock %}

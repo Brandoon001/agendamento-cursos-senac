@@ -1,0 +1,64 @@
+{# Formulário administrativo de cadastro e edição de turma. #}
+{% extends "admin_base.html" %}
+{% from "components/ui.html" import breadcrumb, field, checkbox_field %}
+
+{% block title %}{{ titulo_pagina }} | Painel administrativo{% endblock %}
+
+{% block content %}
+  {{ breadcrumb([
+    {'label': 'Painel', 'url': url_for('admin.dashboard')},
+    {'label': 'Cursos', 'url': url_for('admin.cursos')},
+    {'label': 'Turmas', 'url': url_for('admin.turmas_do_curso', curso_id=curso.id)},
+    {'label': 'Editar' if turma else 'Nova'}
+  ]) }}
+
+  <section class="admin-page-header">
+    <div>
+      <p class="eyebrow">Turma de {{ curso.titulo }}</p>
+      <h1>{{ titulo_pagina }}</h1>
+      <p>Defina os dias, horários, período e quantidade de vagas da turma.</p>
+    </div>
+  </section>
+
+  <form method="post" novalidate>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        {{ formulario.hidden_tag() }}
+
+        <div class="form-section mt-0 pt-0 border-0">
+          <h2><i class="bi bi-calendar-range" aria-hidden="true"></i> Identificação</h2>
+          <div class="form-grid">
+            {{ field(formulario.nome, span=true, atributos={'placeholder': 'Ex.: Turma Manhã'}) }}
+            {{ field(formulario.dias_semana, span=true, atributos={'placeholder': 'Ex.: Segunda, quarta e sexta'}) }}
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2><i class="bi bi-clock" aria-hidden="true"></i> Horário e período</h2>
+          <div class="form-grid">
+            {{ field(formulario.hora_inicio) }}
+            {{ field(formulario.hora_fim) }}
+            {{ field(formulario.data_inicio) }}
+            {{ field(formulario.data_fim) }}
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2><i class="bi bi-people" aria-hidden="true"></i> Vagas e situação</h2>
+          <div class="form-grid">
+            {{ field(formulario.vagas, help='Deixe em branco para não limitar as vagas.', atributos={'min': 0}) }}
+            {{ checkbox_field(formulario.ativo) }}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check2-circle" aria-hidden="true"></i>
+            Salvar turma
+          </button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin.turmas_do_curso', curso_id=curso.id) }}">Cancelar</a>
+        </div>
+      </div>
+    </div>
+  </form>
+{% endblock %}

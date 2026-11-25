@@ -6,9 +6,8 @@ from enum import Enum
 
 
 class TipoCurso(str, Enum):
-    """Define como o curso é ofertado ao público."""
+    """Formato de oferta mantido no banco; todos os cursos são gratuitos."""
 
-    PAGO = "pago"
     GRATUITO = "gratuito"
 
 
@@ -24,3 +23,12 @@ class StatusInscricao(str, Enum):
     CONTATADA = "contatada"
     FINALIZADA = "finalizada"
     CANCELADA = "cancelada"
+
+
+STATUS_LABELS = {
+    StatusInscricao.RECEBIDA: "Recebida",
+    StatusInscricao.EM_ANALISE: "Em análise",
+    StatusInscricao.CONTATADA: "Contatada",
+    StatusInscricao.FINALIZADA: "Finalizada",
+    StatusInscricao.CANCELADA: "Cancelada",
+}

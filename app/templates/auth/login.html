@@ -1,27 +1,45 @@
+{# Tela de acesso do administrador ao painel. #}
 {% extends "base.html" %}
+{% from "components/ui.html" import field %}
 
 {% block title %}Acesso administrativo | SENAC Cursos{% endblock %}
 
 {% block content %}
-  <section class="auth-card">
-    <p class="eyebrow">Área restrita</p>
-    <h1>Acesso administrativo</h1>
-    <p class="muted">
-      O formulário abaixo é o ponto de integração da autenticação. A validação
-      das credenciais deve ser implementada em
-      <code>app/blueprints/auth/routes.py</code>.
-    </p>
+  <section class="auth-card card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5">
+      <div class="text-center mb-4">
+        <span class="stat-card__icon mx-auto mb-3" style="width: 3.5rem; height: 3.5rem; font-size: 1.6rem;" aria-hidden="true">
+          <i class="bi bi-shield-lock"></i>
+        </span>
+        <p class="eyebrow">Área restrita</p>
+        <h1>Acesso administrativo</h1>
+        <p class="text-muted mb-0">Informe suas credenciais para gerenciar cursos, turmas e inscrições.</p>
+      </div>
 
-    <form method="post" action="{{ url_for('auth.login') }}" class="form">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <form
+        method="post"
+        novalidate
+        action="{{ url_for('auth.login', next=proximo) if proximo else url_for('auth.login') }}"
+      >
+        {{ formulario.hidden_tag() }}
 
-      <label for="email">E-mail</label>
-      <input id="email" name="email" type="email" autocomplete="username" required>
+        {{ field(formulario.email, atributos={'autocomplete': 'username', 'placeholder': 'admin@senac.br'}) }}
+        {{ field(formulario.senha, atributos={'autocomplete': 'current-password'}) }}
 
-      <label for="senha">Senha</label>
-      <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+            Entrar
+          </button>
+        </div>
 
-      <button type="submit" class="button">Entrar</button>
-    </form>
+        <div class="text-center mt-3">
+          <a class="small" href="{{ url_for('main.index') }}">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            Voltar ao início
+          </a>
+        </div>
+      </form>
+    </div>
   </section>
 {% endblock %}

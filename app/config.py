@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 INSTANCE_DIR = BASE_DIR / "instance"
 
+EXTENSOES_IMAGEM_PERMITIDAS = ("png", "jpg", "jpeg", "gif", "webp")
+
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -44,6 +46,16 @@ class Config:
     WTF_CSRF_TIME_LIMIT = int(os.getenv("WTF_CSRF_TIME_LIMIT", "3600"))
 
     MAX_CONTENT_LENGTH = 4 * 1024 * 1024
+
+    UPLOAD_FOLDER = BASE_DIR / "app" / "static" / "uploads"
+    UPLOAD_URL_PREFIX = "/static/uploads/"
+    UPLOAD_EXTENSOES_IMAGEM = EXTENSOES_IMAGEM_PERMITIDAS
+
+    CIDADE_PADRAO = os.getenv("CIDADE_PADRAO", "Sobral")
+    PORTAL_CURSOS_URL = os.getenv(
+        "PORTAL_CURSOS_URL",
+        "https://cursos.ce.senac.br/",
+    )
 
 
 class DevelopmentConfig(Config):
@@ -83,4 +95,7 @@ _CONFIGURACOES = {
 def get_config(nome: str | None = None) -> type[Config]:
     """Retorna a classe de configuração conforme nome ou variável de ambiente."""
     chave = (nome or os.getenv("FLASK_CONFIG") or "development").strip().lower()
-    return _CONFIGURACOES.get(chave, DevelopmentConfig)
+    configuracao = _CONFIGURACOES.get(chave)
+    if configuracao is None:
+        raise ValueError(f"Configuração desconhecida: {chave!r}")
+    return configuracao

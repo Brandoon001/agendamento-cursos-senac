@@ -1,49 +1,83 @@
+{# Página inicial: cursos em destaque e link para o catálogo. #}
 {% extends "base.html" %}
+{% from "components/curso_card.html" import curso_card %}
+{% from "components/ui.html" import empty_state %}
 
 {% block title %}Início | SENAC Cursos{% endblock %}
 
 {% block content %}
-  <section class="hero">
-    <p class="eyebrow">Fundação da aplicação</p>
-    <h1>Cursos SENAC em um só lugar</h1>
+  <section class="senac-hero">
+    <p class="eyebrow">SENAC Sobral &middot; cursos gratuitos</p>
+    <h1>Encontre o próximo curso para você</h1>
     <p>
-      Estrutura compartilhada para catálogo de cursos pagos e gratuitos,
-      pré-inscrição interna e administração do sistema.
+      Faça sua pré-inscrição nos cursos gratuitos disponíveis na unidade do
+      SENAC em Sobral. A equipe entrará em contato para confirmar sua vaga.
     </p>
-    <a class="button" href="{{ url_for('catalogo.listar') }}">Ver catálogo</a>
+    <a class="btn btn-accent btn-lg" href="{{ url_for('catalogo.listar') }}">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      Ver cursos gratuitos
+    </a>
+    <p class="external-course-link">
+      Procura outras opções?
+      <a href="{{ config.PORTAL_CURSOS_URL }}" target="_blank" rel="noopener noreferrer">
+        Acesse o portal de cursos do SENAC Ceará
+      </a>
+    </p>
   </section>
 
-  <section class="grid" aria-label="Módulos da aplicação">
-    <article class="card">
-      <h2>Catálogo</h2>
-      <p>
-        Cursos pagos direcionam para links externos individuais. Cursos
-        gratuitos exibem o fluxo de pré-inscrição.
-      </p>
-    </article>
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-md-4">
+      <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 h-100">
+        <span class="stat-card__icon mb-0"><i class="bi bi-gift" aria-hidden="true"></i></span>
+        <div>
+          <strong class="d-block">Gratuitos</strong>
+          <span class="text-muted small">Sem custo de inscrição</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 h-100">
+        <span class="stat-card__icon mb-0"><i class="bi bi-geo-alt" aria-hidden="true"></i></span>
+        <div>
+          <strong class="d-block">Sobral</strong>
+          <span class="text-muted small">Unidade do SENAC</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded-3 h-100">
+        <span class="stat-card__icon mb-0"><i class="bi bi-laptop" aria-hidden="true"></i></span>
+        <div>
+          <strong class="d-block">Online</strong>
+          <span class="text-muted small">Pré-inscrição simplificada</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <article class="card">
-      <h2>Pré-inscrição</h2>
-      <p>
-        Formulário interno exclusivo para cursos gratuitos, com validação e
-        acompanhamento de status.
-      </p>
-    </article>
+  <section class="section-block" aria-labelledby="cursos-destaque">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Disponíveis agora</p>
+        <h2 id="cursos-destaque">Cursos em destaque</h2>
+      </div>
+      {% if total_cursos > cursos|length %}
+        <a class="btn btn-outline-primary" href="{{ url_for('catalogo.listar') }}">
+          Ver os {{ total_cursos }} cursos
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+      {% endif %}
+    </div>
 
-    <article class="card">
-      <h2>Administração</h2>
-      <p>
-        Área protegida para o único administrador gerenciar cursos e
-        inscrições.
-      </p>
-    </article>
-  </section>
-
-  <section class="notice">
-    <h2>Estrutura pronta para integração</h2>
-    <p>
-      Os módulos de catálogo, inscrições e painel administrativo serão
-      implementados pelos integrantes da equipe sobre esta fundação.
-    </p>
+    {% if cursos %}
+      <div class="course-grid">
+        {% for curso in cursos %}
+          {{ curso_card(curso) }}
+        {% endfor %}
+      </div>
+    {% else %}
+      {% call empty_state("Nenhum curso publicado", "No momento não há cursos ativos no catálogo. Volte em breve.", "calendar-x") %}
+      {% endcall %}
+    {% endif %}
   </section>
 {% endblock %}

@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 from app.extensions import db
 from app.models.base import TimestampMixin
-from app.models.enums import StatusInscricao
+from app.models.enums import STATUS_LABELS, StatusInscricao
 
 
 def _valores_enum(enum_cls: type) -> list[str]:
@@ -17,8 +19,8 @@ class Inscricao(TimestampMixin, db.Model):
     A validação de que o curso é gratuito e está ativo deve ser feita pela
     camada de serviço do módulo de inscrições antes da persistência.
 
-    CPF, e-mail e telefone são opcionais nesta fundação. A obrigatoriedade
-    desses campos será definida posteriormente pelo módulo de inscrições.
+    Cada CPF pode ter apenas uma inscrição em todo o sistema. O serviço exige
+    CPF válido nas novas inscrições; registros antigos podem permanecer sem CPF.
     """
 
     __tablename__ = "inscricoes"
@@ -40,6 +42,16 @@ class Inscricao(TimestampMixin, db.Model):
             "administradores.id",
             ondelete="SET NULL",
             name="fk_inscricoes_administrador_id",
+        ),
+        nullable=True,
+        index=True,
+    )
+    turma_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "turmas.id",
+            ondelete="SET NULL",
+            name="fk_inscricoes_turma_id",
         ),
         nullable=True,
         index=True,
@@ -66,6 +78,7 @@ class Inscricao(TimestampMixin, db.Model):
     )
 
     curso = db.relationship("Curso", back_populates="inscricoes")
+    turma = db.relationship("Turma", back_populates="inscricoes")
     administrador = db.relationship(
         "Administrador",
         back_populates="inscricoes",
@@ -74,12 +87,23 @@ class Inscricao(TimestampMixin, db.Model):
 
     __table_args__ = (
         db.UniqueConstraint(
-            "curso_id",
             "cpf",
-            name="uq_inscricoes_curso_cpf",
+            name="uq_inscricoes_cpf",
         ),
         db.Index("ix_inscricoes_curso_status", "curso_id", "status"),
     )
+
+    @property
+    def protocolo(self) -> str:
+        """Código legível exibido ao candidato e ao administrador."""
+        ano = self.criado_em.year if self.criado_em else date.today().year
+        identificador = self.id or 0
+        return f"INS-{ano}-{identificador:05d}"
+
+    @property
+    def situacao(self) -> str:
+        """Descrição amigável da situação atual."""
+        return STATUS_LABELS.get(self.status, "Desconhecida")
 
     def __repr__(self) -> str:
         return f"<Inscricao {self.nome_completo!r} curso={self.curso_id}>"
